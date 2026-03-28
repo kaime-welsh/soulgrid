@@ -47,7 +47,8 @@ public sealed class World
         AddEntity(Player);
 
         Generate();
-        
+
+        TurnManager.Get().TurnCount = 0;
         TurnManager.Get().Reset();
         TurnManager.Get().GatherEntityIntents();
         OnReset?.Invoke();
@@ -81,7 +82,8 @@ public sealed class World
         Player.X = (int)playerPos.X;
         Player.Y = (int)playerPos.Y;
 
-        int mobCount = (int)((CurrentFloor * 2) + 5);
+        int baseMobCount = (CurrentFloor * 2) + random.Next(1, 3);
+        int mobCount = (int)(baseMobCount * TurnManager.Get().CurrentDifficulty);
 
         for (int i = 0; i < mobCount; i++)
         {
