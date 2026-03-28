@@ -1,14 +1,13 @@
 namespace SoulGrid.Core.Entities;
 
-public class Player : Entity
+public class Player(int x, int y) : Entity(EntityType.Player, x, y, 1, 1)
 {
     public int Souls { get; set; } = 1;
     public event Action<int>? OnSoulsGained;
-    public override int Damage => 1;
+    public override int Damage => Math.Max(1, (int)(Souls * 0.15));
 
     public void TriggerSoulGain(int amount) => OnSoulsGained?.Invoke(amount);
 
-    public Player(int x, int y) : base(EntityType.Player, x, y) { }
     public override void TakeDamage(int amount, Entity damager)
     {
         this.TriggerTakeDamage(amount);

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SoulGrid.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd2344553a3177e1ce0f681c5da551b3fb18e1ca")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44af7777a9786568ffa307c10554a0831b2e6681")]
 [assembly: System.Reflection.AssemblyProductAttribute("SoulGrid.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SoulGrid.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -14,7 +14,8 @@ public class Entity
 
     public int HP { get; set; }
     public bool IsAlive => HP > 0;
-    public virtual int Damage => Math.Max(1, (int)(World.Get().Player.Souls * 0.15));
+    // public virtual int Damage => Math.Max(1, (int)(World.Get().Player.Souls * 0.15));
+    public virtual int Damage { get; set; }
 
     public Intent? NextIntent { get; set; }
     public Func<World, Entity, Intent?>? ThinkAction { get; set; }
@@ -31,13 +32,24 @@ public class Entity
     public void TriggerTakeDamage(int amount) => OnTakeDamage?.Invoke(amount);
     public void TriggerDie() => OnDie?.Invoke();
 
-    public Entity(EntityType type, int x, int y, int hp = 1)
+    public Entity(EntityType type, int x, int y, int hp = 1, int damage = 1)
     {
         Type = type;
         X = x;
         Y = y;
-        HP = hp;
         ID = EntityCount++;
+
+        if (type == EntityType.Player)
+        {
+            HP = hp;
+            Damage = damage;
+        }
+        else
+        {
+            float diff = TurnManager.Get().CurrentDifficulty;
+            HP = Math.Max(1, (int)(hp * diff));
+            Damage = Math.Max(1, (int)(damage * diff));
+        }
     }
 
     public virtual void TakeDamage(int amount, Entity damager)

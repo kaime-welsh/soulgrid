@@ -11,12 +11,17 @@ public class TurnManager
 {
     private static TurnManager? _instance;
     public static TurnManager Get() => _instance ??= new TurnManager();
+    
+    private Queue<Entity> _turnQueue = new Queue<Entity>();
+    private const float _difficultyScalingPerTurn = 0.01f;
+    private const float _maxDifficultyCap = 10.0f;
+
+    public float CurrentDifficulty => Math.Min(_maxDifficultyCap, 1.0f + (TurnCount * _difficultyScalingPerTurn));
 
     public int TurnCount { get; set; }
     public TurnState State { get; private set; } = TurnState.WaitingForPlayer;
     public bool IsAwaitingPlayerInput => State == TurnState.WaitingForPlayer;
 
-    private Queue<Entity> _turnQueue = new Queue<Entity>();
 
     private TurnManager() { }
 
@@ -29,7 +34,6 @@ public class TurnManager
     
     public void Reset()
     {
-        TurnCount = 0;
         _turnQueue.Clear();
         State = TurnState.WaitingForPlayer;
     }

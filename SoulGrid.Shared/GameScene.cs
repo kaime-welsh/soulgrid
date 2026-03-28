@@ -43,7 +43,7 @@ public class GameScene : Scene
     private Queue<Entity> turnQueue = new Queue<Entity>();
     private bool isProcessingTurns = false;
     private float sequenceTimer = 0f;
-    private const float SequenceDelay = 0.005f;
+    private const float SequenceDelay = 0.001f;
 
     public static Dictionary<Core.TileType, RenderData> TileRenderLookup = new Dictionary<Core.TileType, RenderData>()
     {
@@ -313,7 +313,7 @@ public class GameScene : Scene
             DrawText(pop.Text, (int)pop.Pos.X, (int)(pop.Pos.Y - (1.0f - pop.Life) * 40f), 10, textCol);
         }
 
-        DrawText(
+        /*DrawText(
             $"Floor {World.Get().CurrentFloor}",
             245, 5, 10, Assets.UnpackColor(Palette.White)
         );
@@ -322,9 +322,50 @@ public class GameScene : Scene
             245, 15, 10, Assets.UnpackColor(Palette.White)
         );
         DrawText(
-            $"Souls: {World.Get().Player.Souls}",
-            245, 30, 10, Assets.UnpackColor(Palette.White)
+            $"Difficulty: {(int)TurnManager.Get().CurrentDifficulty}",
+            245, 25, 10, Assets.UnpackColor(Palette.White)
         );
+        DrawText(
+            $"Souls: {World.Get().Player.Souls}",
+            245, 35, 10, Assets.UnpackColor(Palette.White)
+        );*/
+        
+        int hudX = 245;
+        int startY = 5;
+        int spacing = 15; // Vertical spacing between lines
+
+        // 1. Basic Progress
+        DrawText($"Floor {World.Get().CurrentFloor}", hudX, startY, 10, Assets.UnpackColor(Palette.White));
+        DrawText($"Turns: {TurnManager.Get().TurnCount}", hudX, startY + spacing, 10, Assets.UnpackColor(Palette.White));
+        
+        // 2. Player Power
+        DrawText($"Souls: {World.Get().Player.Souls}", hudX, startY + spacing * 2, 10, Assets.UnpackColor(Palette.White));
+        DrawText($"Damage: {World.Get().Player.Damage}", hudX, startY + spacing * 3, 10, Color.Gold);
+
+        // 3. Difficulty Scaling Logic
+        float diff = TurnManager.Get().CurrentDifficulty;
+        string threatLevel = "EASY";
+        Color threatColor = Color.Green;
+
+        if (diff >= 3.0f) 
+        { 
+            threatLevel = "NIGHTMARE"; 
+            threatColor = Color.Magenta; 
+        }
+        else if (diff >= 2.0f) 
+        { 
+            threatLevel = "HARD"; 
+            threatColor = Color.Red; 
+        }
+        else if (diff >= 1.5f) 
+        { 
+            threatLevel = "NORMAL"; 
+            threatColor = Color.Yellow; 
+        }
+
+        // 4. Threat Display
+        DrawText($"Threat: {diff:F2}x", hudX, startY + spacing * 5, 10, threatColor);
+        DrawText($"[{threatLevel}]", hudX, startY + spacing * 6, 10, threatColor); 
     }
 
     public override void Unload() { }
