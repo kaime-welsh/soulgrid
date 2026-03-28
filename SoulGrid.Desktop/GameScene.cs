@@ -95,11 +95,6 @@ public class GameScene : Scene
 
             SeedMapTextures();
             HookEntityEvents();
-
-            foreach (var e in World.Get().Entities)
-            {
-                if (e != World.Get().Player) World.Get().GatherEntityIntent(e);
-            }
         };
 
         World.Get().NextFloor();
@@ -182,8 +177,8 @@ public class GameScene : Scene
 
     public override void Update(float dt)
     {
-        if (!isProcessingTurns)
-        {
+        if (TurnManager.Get().IsAwaitingPlayerInput)
+        { // Gather player input and submit to TurnManager
             Intent? playerIntent = null;
 
             if (Input.Pressed(Input.Up)) playerIntent = new MoveIntent(0, -1);
@@ -193,64 +188,16 @@ public class GameScene : Scene
 
             if (playerIntent != null)
             {
-                World.Get().Player.NextIntent = playerIntent;
-
-                if (World.Get().ProcessPlayerTurn())
-                {
-                    if (World.Get().JustChangedFloor)
-                    {
-                        World.Get().JustChangedFloor = false;
-
-                        foreach (Entity entity in World.Get().Entities)
-                        {
-                            if (entity != World.Get().Player && entity.IsAlive)
-                                World.Get().GatherEntityIntent(entity);
-                        }
-                    }
-                    else
-                    {
-                        HookEntityEvents();
-                        turnQueue.Clear();
-                        foreach (var enemy in World.Get().Entities)
-                        {
-                            if (enemy != World.Get().Player && enemy.IsAlive)
-                                turnQueue.Enqueue(enemy);
-                        }
-                        isProcessingTurns = true;
-                        sequenceTimer = SequenceDelay;
-                    }
-                }
+                TurnManager.Get().SubmitPlayerInput(playerIntent);
             }
         }
-        else
+
+        // Use sequence timer to control visual speed of enemy turns
+        sequenceTimer -= dt;
+        if (sequenceTimer <= 0)
         {
-            sequenceTimer -= dt;
-            if (sequenceTimer <= 0)
-            {
-                if (turnQueue.Count > 0)
-                {
-                    Entity currentEnemy = turnQueue.Dequeue();
-
-                    if (currentEnemy.NextIntent != null)
-                    {
-                        World.Get().ResolveIntent(currentEnemy);
-                        currentEnemy.NextIntent = null;
-                        HookEntityEvents();
-                    }
-                    sequenceTimer = 0;
-                }
-                else
-                {
-                    isProcessingTurns = false;
-                    World.Get().IncrementTurn();
-
-                    foreach (Entity entity in World.Get().Entities)
-                    {
-                        if (entity != World.Get().Player && entity.IsAlive)
-                            World.Get().GatherEntityIntent(entity);
-                    }
-                }
-            }
+            TurnManager.Get().Tick();
+            sequenceTimer = SequenceDelay;
         }
 
         foreach (Entity entity in World.Get().Entities)
@@ -370,7 +317,7 @@ public class GameScene : Scene
             245, 5, 10, Assets.UnpackColor(Palette.White)
         );
         DrawText(
-            $"Turns: {World.Get().TurnCount}",
+            $"Turns: {TurnManager.Get().TurnCount}",
             245, 15, 10, Assets.UnpackColor(Palette.White)
         );
         DrawText(
