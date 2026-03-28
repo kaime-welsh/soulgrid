@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "OV/hGz8tHu0=",
+  "success": true,
+  "projectFilePath": "/home/sysop/Documents/soulgrid/SoulGrid.Shared/SoulGrid.Shared.csproj",
+  "expectedPackageFiles": [
+    "/home/sysop/.nuget/packages/raylib-cs/7.0.2/raylib-cs.7.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

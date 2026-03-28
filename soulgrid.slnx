@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="SoulGrid.Core/SoulGrid.Core.csproj" />
   <Project Path="SoulGrid.Desktop/SoulGrid.Desktop.csproj" />
+  <Project Path="SoulGrid.Shared/SoulGrid.Shared.csproj" />
+  <Project Path="SoulGrid.Web/SoulGrid.Web.csproj" />
 </Solution>

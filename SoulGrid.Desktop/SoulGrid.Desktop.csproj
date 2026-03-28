@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SoulGrid.Core\SoulGrid.Core.csproj" />
+    <ProjectReference Include="..\SoulGrid.Shared\SoulGrid.Shared.csproj" />
   </ItemGroup>
 
 </Project>

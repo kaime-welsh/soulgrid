@@ -6,7 +6,7 @@ using static Raylib_cs.Raylib;
 using SoulGrid.Core;
 using SoulGrid.Core.Entities;
 
-namespace SoulGrid.Desktop;
+namespace SoulGrid.Shared;
 
 public record RenderData(char Character, uint Color);
 public enum GameState { AwaitingInput, PlayerTurn, EnemyTurn }
@@ -98,6 +98,7 @@ public class GameScene : Scene
         };
 
         World.Get().NextFloor();
+        World.Get().JustChangedFloor = false;
         SeedMapTextures();
         HookEntityEvents();
     }
