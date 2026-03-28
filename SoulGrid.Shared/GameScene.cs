@@ -347,17 +347,17 @@ public class GameScene : Scene
         string threatLevel = "EASY";
         Color threatColor = Color.Green;
 
-        if (diff >= 3.0f) 
+        if (diff >= 4.0f) 
         { 
             threatLevel = "NIGHTMARE"; 
             threatColor = Color.Magenta; 
         }
-        else if (diff >= 2.0f) 
+        else if (diff >= 3.0f) 
         { 
             threatLevel = "HARD"; 
             threatColor = Color.Red; 
         }
-        else if (diff >= 1.5f) 
+        else if (diff >= 2.0f) 
         { 
             threatLevel = "NORMAL"; 
             threatColor = Color.Yellow; 
