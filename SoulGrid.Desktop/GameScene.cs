@@ -1,14 +1,15 @@
 using System.Numerics;
+
 using Raylib_cs;
 using static Raylib_cs.Raylib;
-using SoulGrid.Core;
-using SoulGrid.Entities;
 
-namespace SoulGrid;
+using SoulGrid.Core;
+using SoulGrid.Core.Entities;
+
+namespace SoulGrid.Desktop;
 
 public record RenderData(char Character, uint Color);
 public enum GameState { AwaitingInput, PlayerTurn, EnemyTurn }
-
 
 public class GameScene : Scene
 {
@@ -304,7 +305,7 @@ public class GameScene : Scene
                 if (tileTextures.TryGetValue(gridPos, out Texture2D tex))
                 {
                     TileType type = map.GetAt(x, y);
-                    Color col = Palette.UnpackColor(TileRenderLookup[type].Color);
+                    Color col = Assets.UnpackColor(TileRenderLookup[type].Color);
 
                     DrawTextureEx(tex, screenPos, 0.0f, 1.0f, col);
                 }
@@ -328,8 +329,8 @@ public class GameScene : Scene
             }
 
             Color color = Color.White;
-            if (entity.Type == EntityType.Player) color = Palette.UnpackColor(Palette.Player);
-            if (entity.Type == EntityType.Cultist) color = Palette.UnpackColor(Palette.Cultist);
+            if (entity.Type == EntityType.Player) color = Assets.UnpackColor(Palette.Player);
+            if (entity.Type == EntityType.Cultist) color = Assets.UnpackColor(Palette.Cultist);
 
             if (flashTimers.ContainsKey(entity) && flashTimers[entity] > 0) color = Color.Red;
 
@@ -366,15 +367,15 @@ public class GameScene : Scene
 
         DrawText(
             $"Floor {World.Get().CurrentFloor}",
-            245, 5, 10, Palette.UnpackColor(Palette.White)
+            245, 5, 10, Assets.UnpackColor(Palette.White)
         );
         DrawText(
             $"Turns: {World.Get().TurnCount}",
-            245, 15, 10, Palette.UnpackColor(Palette.White)
+            245, 15, 10, Assets.UnpackColor(Palette.White)
         );
         DrawText(
             $"Souls: {World.Get().Player.Souls}",
-            245, 30, 10, Palette.UnpackColor(Palette.White)
+            245, 30, 10, Assets.UnpackColor(Palette.White)
         );
     }
 

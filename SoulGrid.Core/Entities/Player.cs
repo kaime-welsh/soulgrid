@@ -1,5 +1,4 @@
-using SoulGrid.Core;
-namespace SoulGrid.Entities;
+namespace SoulGrid.Core.Entities;
 
 public class Player : Entity
 {

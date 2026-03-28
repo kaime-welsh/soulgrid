@@ -1,7 +1,7 @@
 using Raylib_cs;
 using static Raylib_cs.Raylib;
 
-namespace SoulGrid;
+namespace SoulGrid.Desktop;
 
 public class Input
 {

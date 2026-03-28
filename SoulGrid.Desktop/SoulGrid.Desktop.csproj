@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>SoulGrid</RootNamespace>
+    <RootNamespace>SoulGrid.Desktop</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
@@ -11,13 +11,9 @@
 
 <Target Name="PublishAllPlatforms" BeforeTargets="Publish" Condition="'$(RuntimeIdentifier)' == ''">
     <Message Text="Building Windows Release..." Importance="high" />
-    <MSBuild Projects="$(MSBuildProjectFile)"
-             Targets="Publish" 
-             Properties="RuntimeIdentifier=win-x64;Configuration=$(Configuration);PublishSingleFile=true;SelfContained=true;IncludeNativeLibrariesForSelfExtract=false" />
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="Publish" Properties="RuntimeIdentifier=win-x64;Configuration=$(Configuration);PublishSingleFile=true;SelfContained=true;IncludeNativeLibrariesForSelfExtract=false" />
     <Message Text="Building Linux Release..." Importance="high" />
-    <MSBuild Projects="$(MSBuildProjectFile)"
-             Targets="Publish" 
-             Properties="RuntimeIdentifier=linux-x64;Configuration=$(Configuration);PublishSingleFile=true;SelfContained=true;IncludeNativeLibrariesForSelfExtract=false" />
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="Publish" Properties="RuntimeIdentifier=linux-x64;Configuration=$(Configuration);PublishSingleFile=true;SelfContained=true;IncludeNativeLibrariesForSelfExtract=false" />
   </Target>
 
   <ItemGroup>
@@ -25,11 +21,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="assets\**">
+    <Content Include="Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SoulGrid.Core\SoulGrid.Core.csproj" />
   </ItemGroup>
 
 </Project>

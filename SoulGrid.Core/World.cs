@@ -1,5 +1,5 @@
 using System.Numerics;
-using SoulGrid.Entities;
+using SoulGrid.Core.Entities;
 namespace SoulGrid.Core;
 
 public sealed class World

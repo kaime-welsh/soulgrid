@@ -1,4 +1,4 @@
-namespace SoulGrid;
+namespace SoulGrid.Core;
 
 public static class GameSettings
 {
@@ -18,13 +18,4 @@ public static class Palette
 
     public const uint Player = 0x33EE66FF;
     public const uint Cultist = 0xEE2277FF;
-    public static Raylib_cs.Color UnpackColor(uint hex)
-    {
-        byte r = (byte)((hex >> 24) & 0xFF);
-        byte g = (byte)((hex >> 16) & 0xFF);
-        byte b = (byte)((hex >> 8) & 0xFF);
-        byte a = (byte)(hex & 0xFF);
-
-        return new Raylib_cs.Color(r, g, b, a);
-    }
 }

@@ -1,4 +1,4 @@
-namespace SoulGrid;
+namespace SoulGrid.Core;
 
 public class Scene
 {

@@ -1,14 +1,10 @@
-using SoulGrid.Core;
+namespace SoulGrid.Core.Entities;
 
-namespace SoulGrid.Entities;
-
-public class Cultist : Entity
+public class Cultist(int x, int y) : Entity(EntityType.Cultist, x, y, 1)
 {
-    public Cultist(int x, int y) : base(EntityType.Cultist, x, y, 1) { }
-
     public override Intent? Think()
     {
-        Entity player = World.Get().Player;
+        Entity player = (Entity)World.Get().Player;
         TileMap map = World.Get().Map;
         Random rng = World.Get().Random;
 
