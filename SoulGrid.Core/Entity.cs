@@ -47,8 +47,8 @@ public class Entity
         else
         {
             float diff = TurnManager.Get().CurrentDifficulty;
-            HP = Math.Max(1, (int)(hp * diff));
-            Damage = Math.Max(1, (int)(damage * diff));
+            HP = Math.Max(1, (int)(hp * diff * 1.25f));
+            Damage = Math.Max(1, (int)(damage * diff * 1.25f));
         }
     }
 

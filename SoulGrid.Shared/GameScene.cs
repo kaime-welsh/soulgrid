@@ -13,6 +13,11 @@ public enum GameState { AwaitingInput, PlayerTurn, EnemyTurn }
 
 public class GameScene : Scene
 {
+    // Swipe Controls
+    private Vector2 touchStartPos;
+    private bool isSwiping = false;
+    private const float swipeDeadzone = 20f;
+
     // Juice Variables
     private Dictionary<Entity, Vector2> visualPositions = new Dictionary<Entity, Vector2>();
     private float lerpSpeed = 25f;
@@ -182,10 +187,37 @@ public class GameScene : Scene
         { // Gather player input and submit to TurnManager
             Intent? playerIntent = null;
 
-            if (Input.Pressed(Input.Up)) playerIntent = new MoveIntent(0, -1);
-            else if (Input.Pressed(Input.Down)) playerIntent = new MoveIntent(0, 1);
-            else if (Input.Pressed(Input.Left)) playerIntent = new MoveIntent(-1, 0);
-            else if (Input.Pressed(Input.Right)) playerIntent = new MoveIntent(1, 0);
+            if (IsMouseButtonDown(MouseButton.Left) && !isSwiping)
+            {
+                touchStartPos = GetMousePosition();
+                isSwiping = true;
+            }
+            if (isSwiping && IsMouseButtonReleased(MouseButton.Left))
+            {
+                Vector2 touchEndPos = GetMousePosition();
+                Vector2 delta = touchEndPos - touchStartPos;
+
+                if (delta.Length() > swipeDeadzone)
+                {
+                    if (Math.Abs(delta.X) > Math.Abs(delta.Y))
+                    {
+                        playerIntent = delta.X > 0 ? new MoveIntent(1, 0) : new MoveIntent(-1, 0);
+                    }
+                    else
+                    {
+                        playerIntent = delta.Y > 0 ? new MoveIntent(0, 1) : new MoveIntent(0, -1);
+                    }
+                }
+                isSwiping = false;
+            }
+
+            if (playerIntent == null)
+            {
+                if (Input.Pressed(Input.Up)) playerIntent = new MoveIntent(0, -1);
+                else if (Input.Pressed(Input.Down)) playerIntent = new MoveIntent(0, 1);
+                else if (Input.Pressed(Input.Left)) playerIntent = new MoveIntent(-1, 0);
+                else if (Input.Pressed(Input.Right)) playerIntent = new MoveIntent(1, 0);
+            }
 
             if (playerIntent != null)
             {
@@ -329,7 +361,7 @@ public class GameScene : Scene
             $"Souls: {World.Get().Player.Souls}",
             245, 35, 10, Assets.UnpackColor(Palette.White)
         );*/
-        
+
         int hudX = 245;
         int startY = 5;
         int spacing = 15; // Vertical spacing between lines
@@ -337,7 +369,7 @@ public class GameScene : Scene
         // 1. Basic Progress
         DrawText($"Floor {World.Get().CurrentFloor}", hudX, startY, 10, Assets.UnpackColor(Palette.White));
         DrawText($"Turns: {TurnManager.Get().TurnCount}", hudX, startY + spacing, 10, Assets.UnpackColor(Palette.White));
-        
+
         // 2. Player Power
         DrawText($"Souls: {World.Get().Player.Souls}", hudX, startY + spacing * 2, 10, Assets.UnpackColor(Palette.White));
         DrawText($"Damage: {World.Get().Player.Damage}", hudX, startY + spacing * 3, 10, Color.Gold);
@@ -347,25 +379,25 @@ public class GameScene : Scene
         string threatLevel = "EASY";
         Color threatColor = Color.Green;
 
-        if (diff >= 4.0f) 
-        { 
-            threatLevel = "NIGHTMARE"; 
-            threatColor = Color.Magenta; 
+        if (diff >= 4.0f)
+        {
+            threatLevel = "NIGHTMARE";
+            threatColor = Color.Magenta;
         }
-        else if (diff >= 3.0f) 
-        { 
-            threatLevel = "HARD"; 
-            threatColor = Color.Red; 
+        else if (diff >= 3.0f)
+        {
+            threatLevel = "HARD";
+            threatColor = Color.Red;
         }
-        else if (diff >= 2.0f) 
-        { 
-            threatLevel = "NORMAL"; 
-            threatColor = Color.Yellow; 
+        else if (diff >= 2.0f)
+        {
+            threatLevel = "NORMAL";
+            threatColor = Color.Yellow;
         }
 
         // 4. Threat Display
         DrawText($"Threat: {diff:F2}x", hudX, startY + spacing * 5, 10, threatColor);
-        DrawText($"[{threatLevel}]", hudX, startY + spacing * 6, 10, threatColor); 
+        DrawText($"[{threatLevel}]", hudX, startY + spacing * 6, 10, threatColor);
     }
 
     public override void Unload() { }
