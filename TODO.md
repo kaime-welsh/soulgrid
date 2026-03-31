@@ -1,5 +1,11 @@
 # To Do
-
+- [ ] Fix quitting
+- [ ] Add settings after starting new run
+      - character select
+      - map size
+      - difficulty scale
+- [ ] Adjust map to always fill the space it should take up underneath a border
+      - letterbox in letterbox woah
 - [ ] Add Demon abilities
   - [ ] Repel (10% S/C): Push all enemies w/ 1 tile away by one tile
   - [ ] Blood Siphon (15% S/C): Fire a 3 tile long beam in chosen direction,
