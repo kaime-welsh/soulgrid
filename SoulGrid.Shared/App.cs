@@ -5,8 +5,9 @@ using SoulGrid.Core;
 
 namespace SoulGrid.Shared;
 
-public class Program
+public class App
 {
+
     private static RenderTexture2D target;
     private static float scale => MathF.Min(
         (float)GetScreenWidth() / GameSettings.ScreenWidth,
@@ -18,12 +19,12 @@ public class Program
         SetConfigFlags(ConfigFlags.ResizableWindow);
         InitWindow(width, height, "SOUL GRID");
         SetTargetFPS(60);
+        SetExitKey(KeyboardKey.Null);
 
         target = LoadRenderTexture(GameSettings.ScreenWidth, GameSettings.ScreenHeight);
-
         Assets.Get().Load();
 
-        Scene.Push(new GameScene());
+        Scene.Push(new MainMenuScene());
     }
 
     public static void Update()

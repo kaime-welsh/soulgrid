@@ -1,6 +1,6 @@
 namespace SoulGrid.Core;
 
-public class Scene
+public abstract class Scene
 {
     private static Stack<Scene> Scenes = new Stack<Scene>();
 
@@ -29,8 +29,8 @@ public class Scene
         }
     }
 
-    public virtual void OnEnter() { }
-    public virtual void Update(float dt) { }
-    public virtual void Draw() { }
-    public virtual void Unload() { }
+    public abstract void OnEnter();
+    public abstract void Update(float dt);
+    public abstract void Draw();
+    public abstract void Unload();
 }

@@ -8,11 +8,14 @@ using SoulGrid.Core.Entities;
 
 namespace SoulGrid.Shared;
 
-public record RenderData(char Character, uint Color);
 public enum GameState { AwaitingInput, PlayerTurn, EnemyTurn }
+public record RenderData(char Character, uint Color);
+public record GameData ( Vector2 MapSize, float StartingDifficulty);
 
 public class GameScene : Scene
 {
+    bool isPaused = false;
+
     // Swipe Controls
     private Vector2 touchStartPos;
     private bool isSwiping = false;
@@ -183,6 +186,8 @@ public class GameScene : Scene
 
     public override void Update(float dt)
     {
+        if (IsKeyPressed(KeyboardKey.Escape)) isPaused = !isPaused;
+        if (isPaused) return;
         if (TurnManager.Get().IsAwaitingPlayerInput)
         { // Gather player input and submit to TurnManager
             Intent? playerIntent = null;
@@ -398,6 +403,21 @@ public class GameScene : Scene
         // 4. Threat Display
         DrawText($"Threat: {diff:F2}x", hudX, startY + spacing * 5, 10, threatColor);
         DrawText($"[{threatLevel}]", hudX, startY + spacing * 6, 10, threatColor);
+
+        if (isPaused)
+        {
+            DrawRectangle((int)(GameSettings.ScreenWidth/4), (int)(GameSettings.ScreenHeight/4), (int)(GameSettings.ScreenWidth/2), (int)(GameSettings.ScreenHeight / 2), Color.Black);
+            DrawRectangleLines((int)(GameSettings.ScreenWidth/4), (int)(GameSettings.ScreenHeight/4), (int)(GameSettings.ScreenWidth/2), (int)(GameSettings.ScreenHeight / 2), Color.White);
+
+            if (Gui.Button(new Vector2((GameSettings.ScreenWidth/2), (GameSettings.ScreenHeight / 2) - 32), "RESUME", true))
+            {
+                isPaused = false;
+            }
+            if (Gui.Button(new Vector2((GameSettings.ScreenWidth/2), (GameSettings.ScreenHeight / 2) - 0), "QUIT", true))
+            {
+                Scene.Pop();
+            }
+        }
     }
 
     public override void Unload() { }

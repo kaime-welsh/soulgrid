@@ -17,9 +17,9 @@ public sealed class World
 
     private static World? _instance;
 
-    private World()
+    private World(int width = 11, int height = 11)
     {
-        Map = new TileMap(15, 15);
+        Map = new TileMap(width, height);
         Entities = new List<Entity>();
         Player = new Player(1, 1);
         AddEntity(Player);

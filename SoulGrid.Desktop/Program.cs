@@ -9,15 +9,15 @@ public class Program
     [System.STAThread]
     public static void Main()
     {
-        Shared.Program.Init(1280, 720);
+        Shared.App.Init(1280, 720);
         MaximizeWindow();
 
         while (!WindowShouldClose())
         {
-            Shared.Program.Update();
-            Shared.Program.Draw();
+            Shared.App.Update();
+            Shared.App.Draw();
         }
 
-        Shared.Program.Unload();
+        Shared.App.Unload();
     }
 }

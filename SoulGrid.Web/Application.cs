@@ -14,14 +14,13 @@ public partial class Application
 {
     public static void Main()
     {
-        Shared.Program.Init(600, 400);
+        Shared.App.Init(600, 400);
     }
 
     [JSExport]
     public static void UpdateFrame()
     {
-        if (IsMouseButtonDown(MouseButton.Left))
-        Shared.Program.Update();
-        Shared.Program.Draw();
+        Shared.App.Update();
+        Shared.App.Draw();
     }
 }

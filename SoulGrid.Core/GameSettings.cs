@@ -2,9 +2,9 @@ namespace SoulGrid.Core;
 
 public static class GameSettings
 {
-    public static readonly int ScreenWidth = 640 / 2;
-    public static readonly int ScreenHeight = 480 / 2;
-    public static readonly int CellSize = 32 / 2;
+    public static readonly int ScreenWidth = 320;
+    public static readonly int ScreenHeight = 240;
+    public static readonly int CellSize = 16;
 }
 
 public static class Palette
