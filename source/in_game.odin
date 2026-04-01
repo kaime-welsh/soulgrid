@@ -4,8 +4,6 @@ import rl "vendor:raylib"
 
 in_game_enter :: proc() {
 	g.paused = false
-
-	g.assets.textures["player"] = rl.LoadTexture("assets/monsters/demon.png")
 }
 
 in_game_update :: proc() {
@@ -18,6 +16,5 @@ in_game_draw :: proc() {
 }
 
 in_game_exit :: proc() {
-	rl.UnloadTexture(g.assets.textures["player"])
 }
 
