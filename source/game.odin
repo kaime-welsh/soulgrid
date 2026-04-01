@@ -11,10 +11,11 @@ Scene :: enum {
 
 Game_Memory :: struct {
 	run:           bool,
-	current_scene: Scene,
-	game_state:    core.Game_State,
-	render_target: rl.RenderTexture2D,
+	paused:        bool,
 	render_scale:  f32,
+	current_scene: Scene,
+	render_target: rl.RenderTexture2D,
+	game_state:    core.Game_State,
 }
 g: ^Game_Memory
 
