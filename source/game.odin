@@ -39,13 +39,13 @@ draw :: proc() {
 	rl.ClearBackground(rl.BLACK)
 	switch g.current_scene {
 	case .MAIN_MENU:
-		main_menu_update()
+		main_menu_draw()
 	case .NEW_RUN:
-		new_run_update()
+		new_run_draw()
 	case .IN_GAME:
-		in_game_update()
+		in_game_draw()
 	case .GAME_OVER:
-		game_over_update()
+		game_over_draw()
 	}
 	rl.EndDrawing()
 }
@@ -64,9 +64,6 @@ game_init_window :: proc() {
 	rl.InitWindow(1280, 720, "SOUL::GRID")
 	rl.SetTargetFPS(60)
 	rl.SetExitKey(nil)
-
-	render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT)
-	change_scene(.MAIN_MENU) // always start the game in the main menu
 }
 
 @(export)
@@ -131,5 +128,31 @@ game_force_restart :: proc() -> bool {
 
 game_parent_window_size_changed :: proc(w, h: int) {
 	rl.SetWindowSize(i32(w), i32(h))
+}
+
+change_scene :: proc(next_scene: Scene) {
+	switch g.current_scene {
+	case .MAIN_MENU:
+		main_menu_exit()
+	case .NEW_RUN:
+		new_run_exit()
+	case .IN_GAME:
+		in_game_exit()
+	case .GAME_OVER:
+		game_over_exit()
+	}
+
+	g.current_scene = next_scene
+
+	switch g.current_scene {
+	case .MAIN_MENU:
+		main_menu_enter()
+	case .NEW_RUN:
+		new_run_enter()
+	case .IN_GAME:
+		in_game_enter()
+	case .GAME_OVER:
+		game_over_enter()
+	}
 }
 

@@ -18,29 +18,3 @@ write_entire_file :: proc(name: string, data: []byte, truncate := true) -> (succ
 	return _write_entire_file(name, data, truncate)
 }
 
-change_scene :: proc(next_scene: Scene) {
-	switch g.current_scene {
-	case .MAIN_MENU:
-		main_menu_exit()
-	case .NEW_RUN:
-		new_run_exit()
-	case .IN_GAME:
-		in_game_exit()
-	case .GAME_OVER:
-		game_over_exit()
-	}
-
-	g.current_scene = next_scene
-
-	switch g.current_scene {
-	case .MAIN_MENU:
-		main_menu_enter()
-	case .NEW_RUN:
-		new_run_enter()
-	case .IN_GAME:
-		in_game_enter()
-	case .GAME_OVER:
-		game_over_enter()
-	}
-}
-
