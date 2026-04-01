@@ -13,15 +13,26 @@ Game_Memory :: struct {
 	run:           bool,
 	current_scene: Scene,
 	game_state:    core.Game_State,
+	render_target: rl.RenderTexture2D,
+	render_scale:  f32,
 }
 g: ^Game_Memory
 
 GAME_WIDTH :: 320
 GAME_HEIGHT :: 240
 
-render_target: rl.RenderTexture2D
-
 update :: proc() {
+	g.render_scale = min(
+		f32(rl.GetScreenWidth()) / f32(GAME_WIDTH),
+		f32(rl.GetScreenHeight()) / f32(GAME_HEIGHT),
+	)
+
+	rl.SetMouseOffset(
+		-i32((f32(rl.GetScreenWidth()) - (f32(GAME_WIDTH) * g.render_scale)) * 0.5),
+		-i32((f32(rl.GetScreenHeight()) - (f32(GAME_HEIGHT) * g.render_scale)) * 0.5),
+	)
+	rl.SetMouseScale(1 / g.render_scale, 1 / g.render_scale)
+
 	switch g.current_scene {
 	case .MAIN_MENU:
 		main_menu_update()
@@ -35,7 +46,7 @@ update :: proc() {
 }
 
 draw :: proc() {
-	rl.BeginDrawing()
+	rl.BeginTextureMode(g.render_target)
 	rl.ClearBackground(rl.BLACK)
 	switch g.current_scene {
 	case .MAIN_MENU:
@@ -47,6 +58,23 @@ draw :: proc() {
 	case .GAME_OVER:
 		game_over_draw()
 	}
+	rl.EndTextureMode()
+
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.BLACK)
+	rl.DrawTexturePro(
+		g.render_target.texture,
+		{0, 0, f32(g.render_target.texture.width), f32(-g.render_target.texture.height)}, // Flip vertically
+		{
+			(f32(rl.GetScreenWidth()) - (f32(GAME_WIDTH) * g.render_scale)) * 0.5,
+			(f32(rl.GetScreenHeight()) - (f32(GAME_HEIGHT) * g.render_scale)) * 0.5,
+			f32(GAME_WIDTH) * g.render_scale,
+			f32(GAME_HEIGHT) * g.render_scale,
+		},
+		{0, 0},
+		0,
+		rl.WHITE,
+	)
 	rl.EndDrawing()
 }
 
@@ -74,6 +102,7 @@ game_init :: proc() {
 		run           = true,
 		current_scene = .MAIN_MENU,
 		game_state    = core.Game_State{},
+		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
 	}
 
 	game_hot_reloaded(g)
@@ -97,7 +126,7 @@ game_shutdown :: proc() {
 
 @(export)
 game_shutdown_window :: proc() {
-	rl.UnloadRenderTexture(render_target)
+	rl.UnloadRenderTexture(g.render_target)
 	rl.CloseWindow()
 }
 
