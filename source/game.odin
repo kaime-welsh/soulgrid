@@ -14,6 +14,7 @@ Game_Memory :: struct {
 	paused:        bool,
 	render_scale:  f32,
 	current_scene: Scene,
+	assets:        Assets,
 	render_target: rl.RenderTexture2D,
 	game_state:    core.Game_State,
 }
@@ -104,7 +105,9 @@ game_init :: proc() {
 		current_scene = .MAIN_MENU,
 		game_state    = core.Game_State{},
 		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
+		assets        = Assets{},
 	}
+	load_assets(g.assets)
 
 	game_hot_reloaded(g)
 }
