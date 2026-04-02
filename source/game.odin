@@ -17,6 +17,7 @@ Game_Memory :: struct {
 	assets:        Assets,
 	render_target: rl.RenderTexture2D,
 	game_state:    core.Game_State,
+	render_data:   [dynamic]Render_Data,
 }
 g: ^Game_Memory
 
@@ -107,7 +108,7 @@ game_init :: proc() {
 		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
 		assets        = Assets{},
 	}
-	load_assets(g.assets)
+	load_assets(&g.assets)
 
 	game_hot_reloaded(g)
 }
@@ -131,6 +132,7 @@ game_shutdown :: proc() {
 @(export)
 game_shutdown_window :: proc() {
 	rl.UnloadRenderTexture(g.render_target)
+	unload_assets(&g.assets)
 	rl.CloseWindow()
 }
 
