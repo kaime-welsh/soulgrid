@@ -95,6 +95,7 @@ game_init_window :: proc() {
 	rl.InitWindow(1280, 720, "SOUL::GRID")
 	rl.SetTargetFPS(60)
 	rl.SetExitKey(nil)
+	rl.MaximizeWindow()
 }
 
 @(export)
@@ -126,13 +127,26 @@ game_should_run :: proc() -> bool {
 
 @(export)
 game_shutdown :: proc() {
+	switch g.current_scene {
+	case .MAIN_MENU:
+		main_menu_exit()
+	case .NEW_RUN:
+		new_run_exit()
+	case .IN_GAME:
+		in_game_exit()
+	case .GAME_OVER:
+		game_over_exit()
+	}
+
+	unload_assets(&g.assets)
+	delete(g.render_data)
+	rl.UnloadRenderTexture(g.render_target)
+
 	free(g)
 }
 
 @(export)
 game_shutdown_window :: proc() {
-	rl.UnloadRenderTexture(g.render_target)
-	unload_assets(&g.assets)
 	rl.CloseWindow()
 }
 

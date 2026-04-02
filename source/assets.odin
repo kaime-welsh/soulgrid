@@ -10,6 +10,11 @@ Assets :: struct {
 }
 
 load_assets :: proc(assets: ^Assets) {
+	assets.textures = make(map[string]rl.Texture2D)
+	assets.fonts = make(map[string]rl.Font)
+	assets.sounds = make(map[string]rl.Sound)
+	assets.music = make(map[string]rl.Music)
+
 	assets.textures["demon"] = rl.LoadTexture("assets/monsters/demon.png")
 
 	assets.textures["wall_1"] = rl.LoadTexture("assets/walls/wall_1.png")
@@ -36,5 +41,25 @@ load_assets :: proc(assets: ^Assets) {
 	assets.textures["door_open_7"] = rl.LoadTexture("assets/doors_open/door_open_7.png")
 }
 
-unload_assets :: proc(assets: ^Assets) {}
+unload_assets :: proc(assets: ^Assets) {
+	for _, texture in assets.textures {
+		rl.UnloadTexture(texture)
+	}
+	delete(assets.textures)
+
+	for _, font in assets.fonts {
+		rl.UnloadFont(font)
+	}
+	delete(assets.fonts)
+
+	for _, sound in assets.sounds {
+		rl.UnloadSound(sound)
+	}
+	delete(assets.sounds)
+
+	for _, music in assets.music {
+		rl.UnloadMusicStream(music)
+	}
+	delete(assets.music)
+}
 

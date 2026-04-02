@@ -67,7 +67,7 @@ in_game_draw :: proc() {
 }
 
 in_game_exit :: proc() {
-
+	delete(g.game_state.tile_map.tiles)
 }
 
 populate_render_data :: proc() {

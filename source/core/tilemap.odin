@@ -46,8 +46,19 @@ tm_set_at :: proc(tm: ^Tile_Map, x, y: i32, new_tile: Tile_Type) {
 }
 
 tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
-	tm.tiles = make([]Tile_Type, tm.width * tm.height)
-	open_tiles := [dynamic][2]i32{}
+	if len(tm.tiles) != int(tm.width * tm.height) {
+		if tm.tiles != nil {
+			delete(tm.tiles)
+		}
+		tm.tiles = make([]Tile_Type, tm.width * tm.height)
+	}
+
+	for i in 0 ..< len(tm.tiles) {
+		tm.tiles[i] = .WALL
+	}
+
+	open_tiles := make([dynamic][2]i32, context.temp_allocator)
+	defer delete(open_tiles)
 
 	{ 	// drunk walk
 		target_floor_count := int(f32(tm.width - 2) * f32(tm.height - 2) * config.floor_percent)
@@ -104,7 +115,9 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 	}
 
 	{ 	// place exits
-		potential_exits := [dynamic][2]i32{}
+		potential_exits := make([dynamic][2]i32, context.temp_allocator)
+		defer delete(potential_exits)
+
 		for pos in open_tiles {
 			for dir in config.directions {
 				check_pos := pos + dir
