@@ -8,9 +8,10 @@ Tile_Type :: enum {
 }
 
 Tile_Map :: struct {
-	width:  i32,
-	height: i32,
-	tiles:  []Tile_Type,
+	width:      i32,
+	height:     i32,
+	tiles:      []Tile_Type,
+	open_tiles: [dynamic][2]i32,
 }
 
 Drunk_Walker_Config :: struct {
@@ -25,7 +26,7 @@ Drunk_Walker_Config :: struct {
 import "core:/math/rand"
 
 tm_init :: proc(width, height: i32) -> Tile_Map {
-	return Tile_Map{width, height, make([]Tile_Type, width * height)}
+	return Tile_Map{width, height, make([]Tile_Type, width * height), {}}
 }
 
 tm_in_bounds :: proc(tm: ^Tile_Map, x, y: i32) -> bool {return(
@@ -52,8 +53,8 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 		tm.tiles[i] = .EMPTY
 	}
 
-	open_tiles := make([dynamic][2]i32, context.temp_allocator)
-	defer delete(open_tiles)
+	tm.open_tiles = make([dynamic][2]i32, context.temp_allocator)
+	defer delete(tm.open_tiles)
 
 	{ 	// drunk walk
 		target_floor_count := int(f32(tm.width - 2) * f32(tm.height - 2) * config.floor_percent)
@@ -61,10 +62,10 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 		walker_dir := rand.choice(config.directions)
 		walker_lifespan := 0
 
-		for len(open_tiles) < target_floor_count {
+		for len(tm.open_tiles) < target_floor_count {
 			// walker has surpassed lifespan, but need more tiles, create new walker in an existing open tile
-			if walker_lifespan >= config.lifespan && len(open_tiles) > 0 {
-				walker_pos = rand.choice(open_tiles[:])
+			if walker_lifespan >= config.lifespan && len(tm.open_tiles) > 0 {
+				walker_pos = rand.choice(tm.open_tiles[:])
 				walker_dir = rand.choice(config.directions)
 				walker_lifespan = 0
 			}
@@ -80,7 +81,7 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 							   stamp.y < tm.height - 1) {
 							if (tm_get_at(tm, stamp.x, stamp.y) != .FLOOR) {
 								tm_set_at(tm, stamp.x, stamp.y, .FLOOR)
-								append(&open_tiles, stamp)
+								append(&tm.open_tiles, stamp)
 							}
 						}
 					}
@@ -88,7 +89,7 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 			} else { 	// place a single floor
 				if tm_get_at(tm, walker_pos.x, walker_pos.y) != .FLOOR {
 					tm_set_at(tm, walker_pos.x, walker_pos.y, .FLOOR)
-					append(&open_tiles, walker_pos)
+					append(&tm.open_tiles, walker_pos)
 				}
 			}
 
@@ -129,7 +130,7 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 		potential_exits := make([dynamic][2]i32, context.temp_allocator)
 		defer delete(potential_exits)
 
-		for pos in open_tiles {
+		for pos in tm.open_tiles {
 			for dir in config.directions {
 				check_pos := pos + dir
 				if tm_get_at(tm, check_pos.x, check_pos.y) == .WALL {

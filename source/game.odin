@@ -16,7 +16,7 @@ Game_Memory :: struct {
 	current_scene: Scene,
 	assets:        Assets,
 	render_target: rl.RenderTexture2D,
-	game_state:    core.Game_State,
+	world:         core.World,
 	render_data:   [dynamic]Render_Data,
 }
 g: ^Game_Memory
@@ -105,7 +105,7 @@ game_init :: proc() {
 	g^ = Game_Memory {
 		run           = true,
 		current_scene = .MAIN_MENU,
-		game_state    = core.Game_State{},
+		world         = core.World{},
 		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
 		assets        = Assets{},
 	}

@@ -17,6 +17,14 @@ load_assets :: proc(assets: ^Assets) {
 
 	assets.textures["demon"] = rl.LoadTexture("assets/monsters/demon.png")
 
+	assets.textures["cultist_1"] = rl.LoadTexture("assets/cultists/cultist_1.png")
+	assets.textures["cultist_2"] = rl.LoadTexture("assets/cultists/cultist_2.png")
+	assets.textures["cultist_3"] = rl.LoadTexture("assets/cultists/cultist_3.png")
+	assets.textures["cultist_4"] = rl.LoadTexture("assets/cultists/cultist_4.png")
+	assets.textures["cultist_5"] = rl.LoadTexture("assets/cultists/cultist_5.png")
+	assets.textures["cultist_6"] = rl.LoadTexture("assets/cultists/cultist_6.png")
+	assets.textures["cultist_7"] = rl.LoadTexture("assets/cultists/cultist_7.png")
+
 	assets.textures["wall_1"] = rl.LoadTexture("assets/walls/wall_1.png")
 	assets.textures["wall_2"] = rl.LoadTexture("assets/walls/wall_2.png")
 	assets.textures["wall_3"] = rl.LoadTexture("assets/walls/wall_3.png")

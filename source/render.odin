@@ -27,7 +27,7 @@ Render_Data :: struct {
 populate_render_data :: proc() {
 	// populate visual data from tilemap
 	clear_dynamic_array(&g.render_data)
-	for tile, idx in g.game_state.tile_map.tiles {
+	for tile, idx in g.world.tile_map.tiles {
 		texture_name: string = ""
 		color: rl.Color = rl.WHITE
 
@@ -44,7 +44,7 @@ populate_render_data :: proc() {
 				"wall_7",
 			}
 			texture_name = rand.choice(wall_textures)
-			color = rl.DARKGREEN
+			color = {0x33, 0x66, 0x55, 0xFF}
 		case .FLOOR:
 			floor_textures := []string {
 				"floor_1",
@@ -55,7 +55,7 @@ populate_render_data :: proc() {
 				"floor_6",
 			}
 			texture_name = rand.choice(floor_textures)
-			color = rl.DARKPURPLE
+			color = {0x22, 0x11, 0x44, 0xFF}
 		case .EXIT:
 			exit_textures := []string {
 				"door_open_1",
@@ -67,18 +67,48 @@ populate_render_data :: proc() {
 				"door_open_7",
 			}
 			texture_name = rand.choice(exit_textures)
-			color = rl.GOLD
+			color = {0xDD, 0xFF, 0x33, 0xFF}
 		}
 		append(
 			&g.render_data,
 			Render_Data {
-				screen_pos = [2]f32 {
-					f32(i32(idx) / g.game_state.tile_map.width) * 16,
-					f32(i32(idx) % g.game_state.tile_map.width) * 16,
+				[2]f32 {
+					f32(i32(idx) % g.world.tile_map.width) * 16,
+					f32(i32(idx) / g.world.tile_map.width) * 16,
 				},
-				type = Tile_Render_Data{texture = g.assets.textures[texture_name]},
-				color = color,
+				color,
+				Tile_Render_Data{texture = g.assets.textures[texture_name]},
 			},
+		)
+	}
+
+	// populate entity data
+	for _, entity in g.world.entities {
+		screen_pos := [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
+		color := rl.MAGENTA
+		texture: string = ""
+
+		#partial switch entity.type {
+		case .PLAYER:
+			texture = "demon"
+			color = {0x33, 0xEE, 0x66, 0xFF}
+		case .CULTIST:
+			cultist_textures := []string {
+				"cultist_1",
+				"cultist_2",
+				"cultist_3",
+				"cultist_4",
+				"cultist_5",
+				"cultist_6",
+				"cultist_7",
+			}
+			texture = rand.choice(cultist_textures)
+			color = {0xEE, 0x22, 0x77, 0xFF}
+		}
+
+		append(
+			&g.render_data,
+			Render_Data{screen_pos, color, Entity_Render_Data{{0, 0}, g.assets.textures[texture]}},
 		)
 	}
 }
