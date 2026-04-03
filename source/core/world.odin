@@ -4,7 +4,7 @@ import "core:math/rand"
 World :: struct {
 	tile_map:      Tile_Map,
 	entities:      map[uint]Entity,
-	player:        ^Entity,
+	player:        uint,
 	current_floor: uint,
 }
 
@@ -38,6 +38,6 @@ world_next_floor :: proc(world: ^World) {
 	)
 	player_pos := rand.choice(world.tile_map.open_tiles[:])
 	world.entities[0] = make_player(player_pos.x, player_pos.y)
-	world.player = &world.entities[0]
+	world.player = 0
 }
 

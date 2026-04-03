@@ -36,10 +36,11 @@ execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Com
 			}
 		}
 
+		owner.pos += {cmd.dx, cmd.dy}
 		return Command_Result{true, {}}
 	case Bump_Command:
 	}
 
-	return Command_Result{false, {}}
+	return Command_Result{true, {}}
 }
 
