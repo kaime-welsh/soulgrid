@@ -1,6 +1,7 @@
 package core
 
 Tile_Type :: enum {
+	EMPTY,
 	WALL,
 	FLOOR,
 	EXIT,
@@ -46,15 +47,9 @@ tm_set_at :: proc(tm: ^Tile_Map, x, y: i32, new_tile: Tile_Type) {
 }
 
 tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
-	if len(tm.tiles) != int(tm.width * tm.height) {
-		if tm.tiles != nil {
-			delete(tm.tiles)
-		}
-		tm.tiles = make([]Tile_Type, tm.width * tm.height)
-	}
-
+	// fill array with empty tiles
 	for i in 0 ..< len(tm.tiles) {
-		tm.tiles[i] = .WALL
+		tm.tiles[i] = .EMPTY
 	}
 
 	open_tiles := make([dynamic][2]i32, context.temp_allocator)
@@ -111,6 +106,22 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 				walker_dir = rand.choice(config.directions)}
 
 			walker_lifespan += 1
+		}
+	}
+
+	{ 	// place walls
+		for y: i32; y < tm.height; y += 1 {
+			for x: i32 = 0; x < tm.width; x += 1 {
+				if tm_get_at(tm, x, y) != .EMPTY {continue}
+				for ny in -1 ..= 1 {
+					for nx in -1 ..= 1 {
+						dir := [2]i32{i32(nx), i32(ny)}
+						if tm_get_at(tm, x + dir.x, y + dir.y) == .FLOOR {
+							tm_set_at(tm, x, y, .WALL)
+						}
+					}
+				}
+			}
 		}
 	}
 
