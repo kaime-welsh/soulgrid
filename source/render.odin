@@ -123,8 +123,10 @@ update_render_data :: proc() {
 	for &data in g.render_data {
 		#partial switch val in data.type {
 		case Entity_Render_Data:
-			entity := &g.world.entities[val.entity_id]
-			data.screen_pos = [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
+			if val.entity_id in g.world.entities {
+				entity := &g.world.entities[val.entity_id]
+				data.screen_pos = [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
+			}
 		}
 	}
 }

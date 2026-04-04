@@ -74,9 +74,9 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 				for rx: i32 = -room_radius; rx <= room_radius; rx += 1 {
 					for ry: i32 = -room_radius; ry <= room_radius; ry += 1 {
 						stamp := [2]i32{walker_pos.x + rx, walker_pos.y + ry}
-						if (stamp.x > 0 &&
+						if (stamp.x > 1 &&
 							   stamp.x < tm.width - 1 &&
-							   stamp.y > 0 &&
+							   stamp.y > 1 &&
 							   stamp.y < tm.height - 1) {
 							if (grid_get_at(tm, stamp.x, stamp.y) != .FLOOR) {
 								grid_set_at(tm, stamp.x, stamp.y, .FLOOR)
@@ -97,9 +97,9 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 			}
 
 			next_pos := walker_pos + walker_dir
-			if next_pos.x > 0 &&
+			if next_pos.x > 1 &&
 			   next_pos.x < tm.width - 1 &&
-			   next_pos.y > 0 &&
+			   next_pos.y > 1 &&
 			   next_pos.y < tm.height - 1 {
 				walker_pos += walker_dir
 			} else {
@@ -110,8 +110,8 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 	}
 
 	{ 	// place walls
-		for y: i32; y < tm.height; y += 1 {
-			for x: i32 = 0; x < tm.width; x += 1 {
+		for y: i32 = 1; y < tm.height; y += 1 {
+			for x: i32 = 1; x < tm.width; x += 1 {
 				if grid_get_at(tm, x, y) != .EMPTY {continue}
 				for ny in -1 ..= 1 {
 					for nx in -1 ..= 1 {

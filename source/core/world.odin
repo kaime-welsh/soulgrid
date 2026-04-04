@@ -8,9 +8,11 @@ World :: struct {
 	current_floor:      uint,
 	just_changed_floor: bool,
 	floor_changed:      proc(world: ^World),
+	current_difficulty: f32,
 }
 
 world_init :: proc(world: ^World, width, height: i32) {
+	entity_count = 1
 	world_reset(world, width, height)
 	world.player_id = world_add_entity(world, .PLAYER, 0, 0)
 	world_next_floor(world)
@@ -30,9 +32,8 @@ world_add_entity :: proc(world: ^World, type: Entity_Type, x, y: i32) -> uint {
 }
 
 world_reset :: proc(world: ^World, width, height: i32) {
-	world.current_floor = 1
-	world.grid = grid_init(height, width)
-	grid_generate(&world.grid, {})
+	world.current_floor = 0
+	world.grid = grid_init(width, height)
 }
 
 world_get_entity_at :: proc(world: ^World, x, y: i32) -> uint {
@@ -43,6 +44,8 @@ world_get_entity_at :: proc(world: ^World, x, y: i32) -> uint {
 }
 
 world_next_floor :: proc(world: ^World) {
+	world.current_floor += 1
+
 	grid_generate(
 		&world.grid,
 		Drunk_Walker_Config {
@@ -55,9 +58,34 @@ world_next_floor :: proc(world: ^World) {
 		},
 	)
 
-	player_pos := rand.choice(world.grid.open_tiles[:])
-	player := &world.entities[world.player_id]
-	player.pos = player_pos
+	// Keep player, remove everyone else
+	for id in world.entities {
+		if id != world.player_id {
+			delete_key(&world.entities, id)
+		}
+	}
+
+	player_ptr := &world.entities[world.player_id]
+	player_ptr.next_command = nil
+
+
+	open_tiles := make([dynamic][2]i32, len(world.grid.open_tiles))
+	copy(open_tiles[:], world.grid.open_tiles[:])
+	defer delete(open_tiles)
+	rand.shuffle(open_tiles[:])
+
+	if len(open_tiles) > 0 {
+		player_pos := pop(&open_tiles)
+		player := &world.entities[world.player_id]
+		player.pos = player_pos
+	}
+
+	mob_count := ((world.current_floor + rand.uint_range(1, 3)) + uint(world.current_difficulty))
+	for _ in 0 ..< min(mob_count, uint(f32((world.grid.width * world.grid.height)) * 0.10)) {
+		if len(open_tiles) == 0 do break
+		entity_pos := pop(&open_tiles)
+		world_add_entity(world, .CULTIST, entity_pos.x, entity_pos.y)
+	}
 
 	world.just_changed_floor = true
 	world.floor_changed(world)

@@ -15,7 +15,7 @@ in_game_enter :: proc() {
 
 	g.world.floor_changed = on_floor_change
 
-	core.world_init(&g.world, 11, 20)
+	core.world_init(&g.world, 20, 11)
 	core.tm_init(&g.turn_manager, 0.005, 10.0)
 }
 
@@ -53,6 +53,7 @@ in_game_update :: proc() {
 
 	core.tm_tick(&g.turn_manager, &g.world)
 	update_render_data()
+
 }
 
 in_game_draw :: proc() {
@@ -67,9 +68,11 @@ in_game_draw :: proc() {
 	}
 
 	if g.paused {show_pause_menu()}
+	rl.DrawFPS(2, 2)
 }
 
 in_game_exit :: proc() {
 	core.world_destroy(&g.world)
+	core.tm_destroy(&g.turn_manager)
 }
 

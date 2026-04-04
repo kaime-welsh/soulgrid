@@ -22,6 +22,10 @@ tm_init :: proc(tm: ^Turn_Manager, diff_scalar, max_diff: f32) {
 	tm.max_difficulty = max_diff
 }
 
+tm_destroy :: proc(tm: ^Turn_Manager) {
+	queue.destroy(&tm.turn_queue)
+}
+
 tm_current_diff :: proc(tm: ^Turn_Manager) -> f32 {
 	return min(tm.max_difficulty, 1.0 + (f32(tm.turn_count) * tm.difficulty_scalar))
 }
@@ -57,10 +61,13 @@ tm_tick :: proc(tm: ^Turn_Manager, world: ^World) {
 			}
 			tm.turn_state = .RESOLVING_ENEMIES
 		} else {
+			if world.just_changed_floor {
+				queue.clear(&tm.turn_queue)
+			}
 			tm.turn_state = .WAITING_FOR_INPUT
 		}
 	case .RESOLVING_ENEMIES:
-		if tm.turn_queue.len > 0 {
+		for tm.turn_queue.len > 0 {
 			current_enemy := queue.dequeue(&tm.turn_queue)
 			if current_enemy.is_alive && current_enemy.next_command != nil {
 				tm_resolve_commands(tm, world, current_enemy)
@@ -68,12 +75,12 @@ tm_tick :: proc(tm: ^Turn_Manager, world: ^World) {
 			}
 		}
 
-		if tm.turn_queue.len == 0 {
-			tm.turn_count += 1
-			tm.turn_state = .WAITING_FOR_INPUT
-			tm_gather_commands(tm, world)
-		}
+		tm.turn_count += 1
+		tm.turn_state = .WAITING_FOR_INPUT
+		tm_gather_commands(tm, world)
 	}
+
+	world.current_difficulty = tm_current_diff(tm)
 }
 
 tm_gather_commands :: proc(tm: ^Turn_Manager, world: ^World) {
