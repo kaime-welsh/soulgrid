@@ -8,6 +8,10 @@ on_floor_change :: proc(world: ^core.World) {
 	populate_render_data()
 }
 
+on_player_died :: proc(entity: ^core.Entity, killed_by: ^core.Entity) {
+	change_scene(.MAIN_MENU)
+}
+
 in_game_enter :: proc() {
 	g.paused = false
 	rand.reset(123456789, context.random_generator)
@@ -17,6 +21,9 @@ in_game_enter :: proc() {
 
 	core.world_init(&g.world, 20, 11)
 	core.tm_init(&g.turn_manager, 0.005, 10.0)
+
+	player := &g.world.entities[g.world.player_id]
+	player.died = on_player_died
 }
 
 in_game_update :: proc() {
@@ -58,6 +65,7 @@ in_game_update :: proc() {
 
 in_game_draw :: proc() {
 	for data in g.render_data {
+		if !data.is_visible do continue
 		switch val in data.type {
 		case Tile_Render_Data:
 			rl.DrawTextureEx(val.texture, data.screen_pos, 0.0, 1, data.color)

@@ -28,6 +28,9 @@ world_add_entity :: proc(world: ^World, type: Entity_Type, x, y: i32) -> uint {
 	case .CULTIST:
 		world.entities[entity_id] = make_cultist(x, y)
 	}
+	
+	ptr := &world.entities[entity_id]
+	ptr.id = entity_id
 	return entity_id
 }
 

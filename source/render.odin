@@ -18,6 +18,7 @@ Damage_Pop_Render_Data :: struct {}
 Render_Data :: struct {
 	screen_pos: [2]f32,
 	color:      rl.Color,
+	is_visible: bool,
 	type:       union {
 		Tile_Render_Data,
 		Entity_Render_Data,
@@ -79,6 +80,7 @@ populate_render_data :: proc() {
 					f32(i32(idx) / g.world.grid.width) * 16,
 				},
 				color,
+				true,
 				Tile_Render_Data{texture = g.assets.textures[texture_name]},
 			},
 		)
@@ -113,6 +115,7 @@ populate_render_data :: proc() {
 			Render_Data {
 				screen_pos,
 				color,
+				true,
 				Entity_Render_Data{entity_id, {0, 0}, g.assets.textures[texture]},
 			},
 		)
@@ -126,6 +129,9 @@ update_render_data :: proc() {
 			if val.entity_id in g.world.entities {
 				entity := &g.world.entities[val.entity_id]
 				data.screen_pos = [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
+				data.is_visible = true
+			} else {
+				data.is_visible = false
 			}
 		}
 	}
