@@ -15,6 +15,7 @@ Entity :: struct {
 	damage:       i32,
 	is_alive:     bool,
 	next_command: Command,
+	moved:        proc(entity: ^Entity, dx, dy: i32),
 	attacked:     proc(entity: ^Entity, target: ^Entity, dx, dy: i32),
 	took_damage:  proc(entity: ^Entity, amount: i32),
 	gained_souls: proc(entity: ^Entity, amount: i32),

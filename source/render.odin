@@ -1,5 +1,6 @@
 package game
 
+import core "core"
 import "core:math/rand"
 import rl "vendor:raylib"
 
@@ -13,7 +14,10 @@ Entity_Render_Data :: struct {
 	texture:   rl.Texture2D,
 }
 
-Damage_Pop_Render_Data :: struct {}
+Damage_Pop_Render_Data :: struct {
+	text: string,
+	life: f32,
+}
 
 Render_Data :: struct {
 	screen_pos: [2]f32,
@@ -26,10 +30,14 @@ Render_Data :: struct {
 	},
 }
 
-populate_render_data :: proc() {
+add_damage_pop :: proc(rd: ^Render_Data) {
+
+}
+
+populate_render_data :: proc(rd: ^[dynamic]Render_Data, world: ^core.World) {
 	// populate visual data from tilemap
-	clear_dynamic_array(&g.render_data)
-	for tile, idx in g.world.grid.cells {
+	clear_dynamic_array(rd)
+	for tile, idx in world.grid.cells {
 		texture_name: string = ""
 		color: rl.Color = rl.WHITE
 
@@ -73,7 +81,7 @@ populate_render_data :: proc() {
 			color = {0xDD, 0xFF, 0x33, 0xFF}
 		}
 		append(
-			&g.render_data,
+			rd,
 			Render_Data {
 				[2]f32 {
 					f32(i32(idx) % g.world.grid.width) * 16,
@@ -87,7 +95,7 @@ populate_render_data :: proc() {
 	}
 
 	// populate entity data
-	for entity_id, entity in g.world.entities {
+	for entity_id, entity in world.entities {
 		screen_pos := [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
 		color := rl.MAGENTA
 		texture: string = ""
@@ -111,7 +119,7 @@ populate_render_data :: proc() {
 		}
 
 		append(
-			&g.render_data,
+			rd,
 			Render_Data {
 				screen_pos,
 				color,
@@ -122,11 +130,11 @@ populate_render_data :: proc() {
 	}
 }
 
-update_render_data :: proc() {
-	for &data in g.render_data {
+update_render_data :: proc(rd: ^[dynamic]Render_Data, world: ^core.World) {
+	for &data in rd {
 		#partial switch val in data.type {
 		case Entity_Render_Data:
-			if val.entity_id in g.world.entities {
+			if val.entity_id in world.entities {
 				entity := &g.world.entities[val.entity_id]
 				data.screen_pos = [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
 				data.is_visible = true

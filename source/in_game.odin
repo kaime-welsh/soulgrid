@@ -6,11 +6,21 @@ import rand "core:math/rand"
 import rl "vendor:raylib"
 
 on_floor_change :: proc(world: ^core.World) {
-	populate_render_data()
+	populate_render_data(&g.render_data, &g.world)
 }
 
-on_player_died :: proc(entity: ^core.Entity, killed_by: ^core.Entity) {
-	change_scene(.MAIN_MENU)
+on_entity_moved :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {}
+
+on_entity_attacked :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {}
+
+on_entity_took_damage :: proc(entity: ^core.Entity, amount: i32) {}
+
+on_entity_gained_souls :: proc(entity: ^core.Entity, amount: i32) {}
+
+on_entity_died :: proc(entity: ^core.Entity, killed_by: ^core.Entity) {
+	if entity.type == .PLAYER {
+		change_scene(.MAIN_MENU)
+	}
 }
 
 in_game_enter :: proc() {
@@ -24,13 +34,21 @@ in_game_enter :: proc() {
 	core.tm_init(&g.turn_manager, 0.005, 10.0)
 
 	player := &g.world.entities[g.world.player_id]
-	player.died = on_player_died
+
+	for entity_id, &entity in &g.world.entities {
+		// entity.moved = on_entity_moved
+		entity.attacked = on_entity_attacked
+		entity.took_damage = on_entity_took_damage
+		entity.gained_souls = on_entity_gained_souls
+		entity.died = on_entity_died
+	}
 }
 
 in_game_update :: proc() {
 	if rl.IsKeyPressed(.ESCAPE) {g.paused = !g.paused}
-	if rl.IsKeyDown(.LEFT_CONTROL) &&
-	   rl.IsKeyPressed(.R) {core.world_next_floor(&g.world); populate_render_data()}
+	if rl.IsKeyDown(.LEFT_CONTROL) && rl.IsKeyPressed(.R) {
+		core.world_next_floor(&g.world)
+		populate_render_data(&g.render_data, &g.world)}
 	if g.paused {return}
 
 	if g.turn_manager.turn_state == .WAITING_FOR_INPUT {
@@ -60,8 +78,7 @@ in_game_update :: proc() {
 	}
 
 	core.tm_tick(&g.turn_manager, &g.world)
-	update_render_data()
-
+	update_render_data(&g.render_data, &g.world)
 }
 
 in_game_draw :: proc() {
@@ -93,9 +110,9 @@ in_game_draw :: proc() {
 	}
 
 	{ 	// draw ui
-		ui_area := rl.Rectangle{4, 184, 312, 52}
-		rl.DrawRectangle(0, 180, GAME_WIDTH, GAME_HEIGHT - 180, rl.WHITE)
-		rl.DrawRectangle(2, 182, 316, 54, rl.BLACK)
+		ui_area := rl.Rectangle{4, 194, 312, 42}
+		rl.DrawRectangle(0, 190, GAME_WIDTH, 50, rl.WHITE)
+		rl.DrawRectangle(2, 192, 316, 46, rl.BLACK)
 
 		rl.DrawText(
 			fmt.ctprintf("FLOOR: {}", g.world.current_floor),
@@ -121,14 +138,6 @@ in_game_draw :: proc() {
 			rl.WHITE,
 		)
 	}
-
-	rl.DrawText(
-		fmt.ctprintf("{}:{}", rl.GetMouseX(), rl.GetMouseY()),
-		rl.GetMouseX(),
-		rl.GetMouseY(),
-		10,
-		rl.RED,
-	)
 
 	if g.paused {show_pause_menu()}
 }

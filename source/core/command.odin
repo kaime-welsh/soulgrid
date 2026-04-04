@@ -44,6 +44,9 @@ execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Com
 		}
 
 		owner.pos += {cmd.dx, cmd.dy}
+		if owner.moved != nil {
+			owner.moved(owner, cmd.dx, cmd.dy)
+		}
 		return Command_Result{true, {}}
 	case Bump_Command:
 		if !cmd.target.is_alive do return Command_Result{true, {}}
