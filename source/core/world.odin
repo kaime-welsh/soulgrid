@@ -4,6 +4,7 @@ import "core:math/rand"
 World :: struct {
 	grid:               Grid,
 	entities:           map[uint]Entity,
+	entity_count:       uint,
 	player_id:          uint,
 	current_floor:      uint,
 	just_changed_floor: bool,
@@ -12,15 +13,16 @@ World :: struct {
 }
 
 world_init :: proc(world: ^World, width, height: i32) {
-	entity_count = 1
+	world.entity_count = 1
+	world.entities = make(map[uint]Entity)
 	world_reset(world, width, height)
 	world.player_id = world_add_entity(world, .PLAYER, 0, 0)
 	world_next_floor(world)
 }
 
 world_add_entity :: proc(world: ^World, type: Entity_Type, x, y: i32) -> uint {
-	entity_id := entity_count
-	entity_count += 1
+	entity_id := world.entity_count
+	world.entity_count += 1
 
 	#partial switch type {
 	case .PLAYER:
@@ -28,12 +30,11 @@ world_add_entity :: proc(world: ^World, type: Entity_Type, x, y: i32) -> uint {
 	case .CULTIST:
 		world.entities[entity_id] = make_cultist(x, y)
 	}
-	
+
 	ptr := &world.entities[entity_id]
 	ptr.id = entity_id
 	return entity_id
 }
-
 world_reset :: proc(world: ^World, width, height: i32) {
 	world.current_floor = 0
 	world.grid = grid_init(width, height)
@@ -69,7 +70,7 @@ world_next_floor :: proc(world: ^World) {
 	}
 
 	player_ptr := &world.entities[world.player_id]
-	player_ptr.next_command = nil
+	player_ptr.next_command.type = nil
 
 
 	open_tiles := make([dynamic][2]i32, len(world.grid.open_tiles))
@@ -97,7 +98,7 @@ world_next_floor :: proc(world: ^World) {
 
 world_destroy :: proc(world: ^World) {
 	delete(world.entities)
-	delete(world.grid.open_tiles)
-	delete(world.grid.cells)
+	world.entities = nil
+	grid_destroy(&world.grid)
 }
 

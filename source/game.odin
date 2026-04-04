@@ -10,15 +10,17 @@ Scene :: enum {
 }
 
 Game_Memory :: struct {
-	run:           bool,
-	paused:        bool,
-	render_scale:  f32,
-	current_scene: Scene,
-	assets:        Assets,
-	render_target: rl.RenderTexture2D,
-	turn_manager:  core.Turn_Manager,
-	world:         core.World,
-	render_data:   [dynamic]Render_Data,
+	run:                 bool,
+	paused:              bool,
+	render_scale:        f32,
+	current_scene:       Scene,
+	next_scene:          Scene,
+	should_change_scene: bool,
+	assets:              Assets,
+	render_target:       rl.RenderTexture2D,
+	turn_manager:        core.Turn_Manager,
+	world:               core.World,
+	render_data:         [dynamic]Render_Data,
 }
 g: ^Game_Memory
 
@@ -46,6 +48,11 @@ update :: proc() {
 		in_game_update()
 	case .GAME_OVER:
 		game_over_update()
+	}
+
+	if g.should_change_scene {
+		g.should_change_scene = false
+		perform_scene_change(g.next_scene)
 	}
 }
 
@@ -181,6 +188,11 @@ game_parent_window_size_changed :: proc(w, h: int) {
 }
 
 change_scene :: proc(next_scene: Scene) {
+	g.next_scene = next_scene
+	g.should_change_scene = true
+}
+
+perform_scene_change :: proc(next_scene: Scene) {
 	switch g.current_scene {
 	case .MAIN_MENU:
 		main_menu_exit()

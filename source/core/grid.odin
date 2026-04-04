@@ -29,6 +29,13 @@ grid_init :: proc(width, height: i32) -> Grid {
 	return Grid{width, height, make([]Cell_Type, width * height), make([dynamic][2]i32)}
 }
 
+grid_destroy :: proc(tm: ^Grid) {
+	delete(tm.cells)
+	delete(tm.open_tiles)
+	tm.cells = nil
+	tm.open_tiles = nil
+}
+
 grid_in_bounds :: proc(tm: ^Grid, x, y: i32) -> bool {return(
 		x >= 0 &&
 		x < tm.width &&

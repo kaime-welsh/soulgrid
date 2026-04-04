@@ -1,6 +1,7 @@
 package game
 
 import core "core"
+import "core:fmt"
 import rand "core:math/rand"
 import rl "vendor:raylib"
 
@@ -54,7 +55,7 @@ in_game_update :: proc() {
 		}
 
 		if input_received {
-			core.tm_submit_input(&g.turn_manager, &g.world, &player_command)
+			core.tm_submit_input(&g.turn_manager, &g.world, player_command)
 		}
 	}
 
@@ -71,12 +72,65 @@ in_game_draw :: proc() {
 			rl.DrawTextureEx(val.texture, data.screen_pos, 0.0, 1, data.color)
 		case Entity_Render_Data:
 			rl.DrawTextureEx(val.texture, data.screen_pos, 0.0, 1, data.color)
+			enemy := &g.world.entities[val.entity_id]
+			if enemy.next_command.type != nil {
+				if cmd, ok := enemy.next_command.type.(core.Move_Command); ok {
+					center := [2]f32 {
+						f32(enemy.pos.x * 16) + (16 / 2),
+						f32(enemy.pos.y * 16) + (16 / 2),
+					}
+					offset := [2]f32{f32(cmd.dx * 6), f32(cmd.dy * 6)}
+
+					rl.DrawPixel(
+						i32(center.x + offset.x - 1),
+						i32(center.y + offset.y - 1),
+						{255, 255, 255, 255},
+					)
+				}
+			}
 		case Damage_Pop_Render_Data:
 		}
 	}
 
+	{ 	// draw ui
+		ui_area := rl.Rectangle{4, 184, 312, 52}
+		rl.DrawRectangle(0, 180, GAME_WIDTH, GAME_HEIGHT - 180, rl.WHITE)
+		rl.DrawRectangle(2, 182, 316, 54, rl.BLACK)
+
+		rl.DrawText(
+			fmt.ctprintf("FLOOR: {}", g.world.current_floor),
+			i32(ui_area.x),
+			i32(ui_area.y),
+			10,
+			rl.WHITE,
+		)
+
+		rl.DrawText(
+			fmt.ctprintf("Souls: {}", g.world.entities[g.world.player_id].hp),
+			i32(ui_area.x),
+			i32(ui_area.y + 12),
+			10,
+			rl.WHITE,
+		)
+
+		rl.DrawText(
+			fmt.ctprintf("Difficulty: {}", i32(g.world.current_difficulty)),
+			i32(ui_area.x),
+			i32(ui_area.y + 24),
+			10,
+			rl.WHITE,
+		)
+	}
+
+	rl.DrawText(
+		fmt.ctprintf("{}:{}", rl.GetMouseX(), rl.GetMouseY()),
+		rl.GetMouseX(),
+		rl.GetMouseY(),
+		10,
+		rl.RED,
+	)
+
 	if g.paused {show_pause_menu()}
-	rl.DrawFPS(2, 2)
 }
 
 in_game_exit :: proc() {

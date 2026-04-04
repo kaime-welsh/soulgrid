@@ -47,12 +47,19 @@ execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Com
 		return Command_Result{true, {}}
 	case Bump_Command:
 		if !cmd.target.is_alive do return Command_Result{true, {}}
-		
+
 		if owner.type != .PLAYER && cmd.target.type != .PLAYER {
-			return Command_Result{true, {}}
+			return Command_Result{false, {}}
 		}
 
-		entity_take_damage(cmd.target, owner.damage)
+		if owner.type == .PLAYER {
+			entity_take_damage(cmd.target, 1)
+		} else {
+			entity_take_damage(cmd.target, entity_current_damage(owner, world))
+		}
+		if owner.attacked != nil {
+			owner.attacked(owner, cmd.target, cmd.dx, cmd.dy)
+		}
 		if !cmd.target.is_alive {
 			entity_die(world, cmd.target)
 		}

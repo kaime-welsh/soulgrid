@@ -20,17 +20,20 @@ tm_init :: proc(tm: ^Turn_Manager, diff_scalar, max_diff: f32) {
 	tm.turn_state = .WAITING_FOR_INPUT
 	tm.difficulty_scalar = diff_scalar
 	tm.max_difficulty = max_diff
+	tm.turn_count = 0
+	tm.turn_queue = {}
 }
 
 tm_destroy :: proc(tm: ^Turn_Manager) {
 	queue.destroy(&tm.turn_queue)
+	tm.turn_queue = {}
 }
 
 tm_current_diff :: proc(tm: ^Turn_Manager) -> f32 {
 	return min(tm.max_difficulty, 1.0 + (f32(tm.turn_count) * tm.difficulty_scalar))
 }
 
-tm_submit_input :: proc(tm: ^Turn_Manager, world: ^World, cmd: ^Command) {
+tm_submit_input :: proc(tm: ^Turn_Manager, world: ^World, cmd: Command) {
 	if tm.turn_state != .WAITING_FOR_INPUT {return}
 	world.just_changed_floor = false
 	player := &world.entities[world.player_id]
@@ -50,7 +53,7 @@ tm_tick :: proc(tm: ^Turn_Manager, world: ^World) {
 	case .RESOLVING_PLAYER:
 		player := &world.entities[world.player_id]
 		acted := tm_resolve_commands(tm, world, player)
-		player.next_command = nil
+		player.next_command.type = nil
 
 		if acted && !world.just_changed_floor {
 			queue.clear(&tm.turn_queue)
@@ -69,9 +72,9 @@ tm_tick :: proc(tm: ^Turn_Manager, world: ^World) {
 	case .RESOLVING_ENEMIES:
 		for tm.turn_queue.len > 0 {
 			current_enemy := queue.dequeue(&tm.turn_queue)
-			if current_enemy.is_alive && current_enemy.next_command != nil {
+			if current_enemy.is_alive && current_enemy.next_command.type != nil {
 				tm_resolve_commands(tm, world, current_enemy)
-				current_enemy.next_command = nil
+				current_enemy.next_command.type = nil
 			}
 		}
 
@@ -98,9 +101,9 @@ tm_gather_commands :: proc(tm: ^Turn_Manager, world: ^World) {
 }
 
 tm_resolve_commands :: proc(tm: ^Turn_Manager, world: ^World, entity: ^Entity) -> bool {
-	if entity.next_command == nil {return false}
+	if entity.next_command.type == nil {return false}
 
-	res := execute_command(world, entity, entity.next_command)
+	res := execute_command(world, entity, &entity.next_command)
 	if !res.succeed {
 		if res.alternative.type != nil {
 			entity.next_command.type = res.alternative.type
