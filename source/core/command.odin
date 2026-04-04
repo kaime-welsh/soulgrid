@@ -8,6 +8,7 @@ Command_Type :: union {
 	Move_Command,
 	Bump_Command,
 }
+
 Command :: struct {
 	type: Command_Type,
 }
@@ -24,8 +25,13 @@ Bump_Command :: struct {
 execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Command_Result {
 	switch cmd in command.type {
 	case Move_Command:
-		if tm_get_at(&world.tile_map, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy) == .WALL {
+		if grid_get_at(&world.grid, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy) == .WALL {
 			return Command_Result{false, {}}
+		}
+
+		if grid_get_at(&world.grid, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy) == .EXIT &&
+		   owner.type == .PLAYER {
+			world_next_floor(world)
 		}
 
 		target_id := world_get_entity_at(world, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy)

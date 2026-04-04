@@ -8,8 +8,9 @@ Tile_Render_Data :: struct {
 }
 
 Entity_Render_Data :: struct {
-	offset:  [2]f32,
-	texture: rl.Texture2D,
+	entity_id: uint,
+	offset:    [2]f32,
+	texture:   rl.Texture2D,
 }
 
 Damage_Pop_Render_Data :: struct {}
@@ -27,12 +28,13 @@ Render_Data :: struct {
 populate_render_data :: proc() {
 	// populate visual data from tilemap
 	clear_dynamic_array(&g.render_data)
-	for tile, idx in g.world.tile_map.tiles {
+	for tile, idx in g.world.grid.cells {
 		texture_name: string = ""
 		color: rl.Color = rl.WHITE
 
 		switch tile {
 		case .EMPTY:
+			continue
 		case .WALL:
 			wall_textures := []string {
 				"wall_1",
@@ -73,8 +75,8 @@ populate_render_data :: proc() {
 			&g.render_data,
 			Render_Data {
 				[2]f32 {
-					f32(i32(idx) % g.world.tile_map.width) * 16,
-					f32(i32(idx) / g.world.tile_map.width) * 16,
+					f32(i32(idx) % g.world.grid.width) * 16,
+					f32(i32(idx) / g.world.grid.width) * 16,
 				},
 				color,
 				Tile_Render_Data{texture = g.assets.textures[texture_name]},
@@ -83,7 +85,7 @@ populate_render_data :: proc() {
 	}
 
 	// populate entity data
-	for _, entity in g.world.entities {
+	for entity_id, entity in g.world.entities {
 		screen_pos := [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
 		color := rl.MAGENTA
 		texture: string = ""
@@ -108,8 +110,22 @@ populate_render_data :: proc() {
 
 		append(
 			&g.render_data,
-			Render_Data{screen_pos, color, Entity_Render_Data{{0, 0}, g.assets.textures[texture]}},
+			Render_Data {
+				screen_pos,
+				color,
+				Entity_Render_Data{entity_id, {0, 0}, g.assets.textures[texture]},
+			},
 		)
+	}
+}
+
+update_render_data :: proc() {
+	for &data in g.render_data {
+		#partial switch val in data.type {
+		case Entity_Render_Data:
+			entity := &g.world.entities[val.entity_id]
+			data.screen_pos = [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
+		}
 	}
 }
 

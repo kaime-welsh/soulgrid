@@ -16,6 +16,7 @@ Game_Memory :: struct {
 	current_scene: Scene,
 	assets:        Assets,
 	render_target: rl.RenderTexture2D,
+	turn_manager:  core.Turn_Manager,
 	world:         core.World,
 	render_data:   [dynamic]Render_Data,
 }

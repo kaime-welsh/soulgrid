@@ -1,16 +1,16 @@
 package core
 
-Tile_Type :: enum {
+Cell_Type :: enum {
 	EMPTY,
 	WALL,
 	FLOOR,
 	EXIT,
 }
 
-Tile_Map :: struct {
+Grid :: struct {
 	width:      i32,
 	height:     i32,
-	tiles:      []Tile_Type,
+	cells:      []Cell_Type,
 	open_tiles: [dynamic][2]i32,
 }
 
@@ -25,36 +25,35 @@ Drunk_Walker_Config :: struct {
 
 import "core:/math/rand"
 
-tm_init :: proc(width, height: i32) -> Tile_Map {
-	return Tile_Map{width, height, make([]Tile_Type, width * height), {}}
+grid_init :: proc(width, height: i32) -> Grid {
+	return Grid{width, height, make([]Cell_Type, width * height), make([dynamic][2]i32)}
 }
 
-tm_in_bounds :: proc(tm: ^Tile_Map, x, y: i32) -> bool {return(
+grid_in_bounds :: proc(tm: ^Grid, x, y: i32) -> bool {return(
 		x >= 0 &&
 		x < tm.width &&
 		y >= 0 &&
 		y < tm.height \
 	)}
 
-tm_get_at :: proc(tm: ^Tile_Map, x, y: i32) -> Tile_Type {
-	if tm_in_bounds(tm, x, y) {return tm.tiles[y * tm.width + x]}
+grid_get_at :: proc(tm: ^Grid, x, y: i32) -> Cell_Type {
+	if grid_in_bounds(tm, x, y) {return tm.cells[y * tm.width + x]}
 	return .WALL
 }
 
-tm_set_at :: proc(tm: ^Tile_Map, x, y: i32, new_tile: Tile_Type) {
-	if tm_in_bounds(tm, x, y) {
-		tm.tiles[y * tm.width + x] = new_tile
+grid_set_at :: proc(tm: ^Grid, x, y: i32, new_tile: Cell_Type) {
+	if grid_in_bounds(tm, x, y) {
+		tm.cells[y * tm.width + x] = new_tile
 	}
 }
 
-tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
+grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 	// fill array with empty tiles
-	for i in 0 ..< len(tm.tiles) {
-		tm.tiles[i] = .EMPTY
+	for i in 0 ..< len(tm.cells) {
+		tm.cells[i] = .EMPTY
 	}
 
-	tm.open_tiles = make([dynamic][2]i32, context.temp_allocator)
-	defer delete(tm.open_tiles)
+	clear(&tm.open_tiles)
 
 	{ 	// drunk walk
 		target_floor_count := int(f32(tm.width - 2) * f32(tm.height - 2) * config.floor_percent)
@@ -79,16 +78,16 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 							   stamp.x < tm.width - 1 &&
 							   stamp.y > 0 &&
 							   stamp.y < tm.height - 1) {
-							if (tm_get_at(tm, stamp.x, stamp.y) != .FLOOR) {
-								tm_set_at(tm, stamp.x, stamp.y, .FLOOR)
+							if (grid_get_at(tm, stamp.x, stamp.y) != .FLOOR) {
+								grid_set_at(tm, stamp.x, stamp.y, .FLOOR)
 								append(&tm.open_tiles, stamp)
 							}
 						}
 					}
 				}
 			} else { 	// place a single floor
-				if tm_get_at(tm, walker_pos.x, walker_pos.y) != .FLOOR {
-					tm_set_at(tm, walker_pos.x, walker_pos.y, .FLOOR)
+				if grid_get_at(tm, walker_pos.x, walker_pos.y) != .FLOOR {
+					grid_set_at(tm, walker_pos.x, walker_pos.y, .FLOOR)
 					append(&tm.open_tiles, walker_pos)
 				}
 			}
@@ -113,12 +112,12 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 	{ 	// place walls
 		for y: i32; y < tm.height; y += 1 {
 			for x: i32 = 0; x < tm.width; x += 1 {
-				if tm_get_at(tm, x, y) != .EMPTY {continue}
+				if grid_get_at(tm, x, y) != .EMPTY {continue}
 				for ny in -1 ..= 1 {
 					for nx in -1 ..= 1 {
 						dir := [2]i32{i32(nx), i32(ny)}
-						if tm_get_at(tm, x + dir.x, y + dir.y) == .FLOOR {
-							tm_set_at(tm, x, y, .WALL)
+						if grid_get_at(tm, x + dir.x, y + dir.y) == .FLOOR {
+							grid_set_at(tm, x, y, .WALL)
 						}
 					}
 				}
@@ -133,7 +132,7 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 		for pos in tm.open_tiles {
 			for dir in config.directions {
 				check_pos := pos + dir
-				if tm_get_at(tm, check_pos.x, check_pos.y) == .WALL {
+				if grid_get_at(tm, check_pos.x, check_pos.y) == .WALL {
 					array_contains := false
 					for exit_pos in potential_exits {
 						if check_pos == exit_pos {
@@ -148,7 +147,7 @@ tm_generate :: proc(tm: ^Tile_Map, config: Drunk_Walker_Config) {
 
 		if len(potential_exits) > 0 {
 			exit_pos := rand.choice(potential_exits[:])
-			tm_set_at(tm, exit_pos.x, exit_pos.y, .EXIT)
+			grid_set_at(tm, exit_pos.x, exit_pos.y, .EXIT)
 		}
 	}
 }
