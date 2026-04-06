@@ -6,12 +6,24 @@ import rand "core:math/rand"
 import rl "vendor:raylib"
 
 on_floor_change :: proc(world: ^core.World) {
+	render_map(&g.world)
 	populate_render_data(&g.render_data, &g.world)
+
+	for _, &entity in &g.world.entities {
+		entity.moved = on_entity_moved
+		entity.attacked = on_entity_attacked
+		entity.took_damage = on_entity_took_damage
+		entity.gained_souls = on_entity_gained_souls
+		entity.died = on_entity_died
+	}
 }
 
-on_entity_moved :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {}
+on_entity_moved :: proc(entity: ^core.Entity, dx, dy: i32) {}
 
-on_entity_attacked :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {}
+on_entity_attacked :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {
+	rd := &g.render_data[entity.id]
+	rd.screen_pos += {f32(dx), f32(dy)} * 16
+}
 
 on_entity_took_damage :: proc(entity: ^core.Entity, amount: i32) {}
 
@@ -28,15 +40,14 @@ in_game_enter :: proc() {
 	rand.reset(123456789, context.random_generator)
 	clear(&g.render_data)
 
+	g.map_texture = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT)
 	g.world.floor_changed = on_floor_change
 
 	core.world_init(&g.world, 20, 11)
-	core.tm_init(&g.turn_manager, 0.005, 10.0)
+	core.tm_init(&g.turn_manager, 0.01, 10.0)
 
-	player := &g.world.entities[g.world.player_id]
-
-	for entity_id, &entity in &g.world.entities {
-		// entity.moved = on_entity_moved
+	for _, &entity in &g.world.entities {
+		entity.moved = on_entity_moved
 		entity.attacked = on_entity_attacked
 		entity.took_damage = on_entity_took_damage
 		entity.gained_souls = on_entity_gained_souls
@@ -82,11 +93,18 @@ in_game_update :: proc() {
 }
 
 in_game_draw :: proc() {
-	for data in g.render_data {
+	rl.DrawTexturePro(
+		g.map_texture.texture,
+		{0, 0, f32(g.map_texture.texture.width), f32(-g.map_texture.texture.height)}, // Flip vertically
+		{0, 0, f32(g.map_texture.texture.width), f32(g.map_texture.texture.height)},
+		{0, 0},
+		0,
+		rl.WHITE,
+	)
+	for _, data in g.render_data {
 		if !data.is_visible do continue
 		switch val in data.type {
 		case Tile_Render_Data:
-			rl.DrawTextureEx(val.texture, data.screen_pos, 0.0, 1, data.color)
 		case Entity_Render_Data:
 			rl.DrawTextureEx(val.texture, data.screen_pos, 0.0, 1, data.color)
 			enemy := &g.world.entities[val.entity_id]
@@ -133,7 +151,15 @@ in_game_draw :: proc() {
 		rl.DrawText(
 			fmt.ctprintf("Difficulty: {}", i32(g.world.current_difficulty)),
 			i32(ui_area.x),
-			i32(ui_area.y + 24),
+			i32(ui_area.y + 23),
+			10,
+			rl.WHITE,
+		)
+
+		rl.DrawText(
+			fmt.ctprintf("Turn: {}", i32(g.turn_manager.turn_count)),
+			i32(ui_area.x),
+			i32(ui_area.y + 35),
 			10,
 			rl.WHITE,
 		)
@@ -143,6 +169,7 @@ in_game_draw :: proc() {
 }
 
 in_game_exit :: proc() {
+	rl.UnloadRenderTexture(g.map_texture)
 	core.world_destroy(&g.world)
 	core.tm_destroy(&g.turn_manager)
 }

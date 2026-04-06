@@ -25,7 +25,8 @@ Bump_Command :: struct {
 execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Command_Result {
 	switch cmd in command.type {
 	case Move_Command:
-		if grid_get_at(&world.grid, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy) == .WALL {
+		if grid_get_at(&world.grid, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy) == .WALL ||
+		   grid_get_at(&world.grid, owner.pos.x + cmd.dx, owner.pos.y + cmd.dy) == .EMPTY {
 			return Command_Result{false, {}}
 		}
 

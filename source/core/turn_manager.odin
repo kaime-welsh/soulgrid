@@ -55,7 +55,7 @@ tm_tick :: proc(tm: ^Turn_Manager, world: ^World) {
 		acted := tm_resolve_commands(tm, world, player)
 		player.next_command.type = nil
 
-		if acted && !world.just_changed_floor {
+		if acted {
 			queue.clear(&tm.turn_queue)
 			for entity_id, &entity in world.entities {
 				if entity_id != world.player_id {

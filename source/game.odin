@@ -20,7 +20,8 @@ Game_Memory :: struct {
 	render_target:       rl.RenderTexture2D,
 	turn_manager:        core.Turn_Manager,
 	world:               core.World,
-	render_data:         [dynamic]Render_Data,
+	map_texture:         rl.RenderTexture,
+	render_data:         map[uint]Render_Data,
 }
 g: ^Game_Memory
 

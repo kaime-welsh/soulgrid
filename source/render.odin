@@ -1,6 +1,7 @@
 package game
 
 import core "core"
+import "core:math/linalg"
 import "core:math/rand"
 import rl "vendor:raylib"
 
@@ -34,13 +35,15 @@ add_damage_pop :: proc(rd: ^Render_Data) {
 
 }
 
-populate_render_data :: proc(rd: ^[dynamic]Render_Data, world: ^core.World) {
+render_map :: proc(world: ^core.World) {
 	// populate visual data from tilemap
-	clear_dynamic_array(rd)
+	rl.BeginTextureMode(g.map_texture)
+	rl.ClearBackground(rl.BLACK)
 	for tile, idx in world.grid.cells {
 		texture_name: string = ""
 		color: rl.Color = rl.WHITE
-
+		texture: rl.Texture2D
+		tile_pos: [2]f32
 		switch tile {
 		case .EMPTY:
 			continue
@@ -80,20 +83,19 @@ populate_render_data :: proc(rd: ^[dynamic]Render_Data, world: ^core.World) {
 			texture_name = rand.choice(exit_textures)
 			color = {0xDD, 0xFF, 0x33, 0xFF}
 		}
-		append(
-			rd,
-			Render_Data {
-				[2]f32 {
-					f32(i32(idx) % g.world.grid.width) * 16,
-					f32(i32(idx) / g.world.grid.width) * 16,
-				},
-				color,
-				true,
-				Tile_Render_Data{texture = g.assets.textures[texture_name]},
-			},
-		)
-	}
 
+		tile_pos = [2]f32 {
+			f32(i32(idx) % g.world.grid.width) * 16,
+			f32(i32(idx) / g.world.grid.width) * 16,
+		}
+
+		texture = g.assets.textures[texture_name]
+		rl.DrawTextureEx(texture, tile_pos, 0.0, 1, color)
+	}
+	rl.EndMode2D()
+}
+
+populate_render_data :: proc(rd: ^map[uint]Render_Data, world: ^core.World) {
 	// populate entity data
 	for entity_id, entity in world.entities {
 		screen_pos := [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
@@ -118,25 +120,26 @@ populate_render_data :: proc(rd: ^[dynamic]Render_Data, world: ^core.World) {
 			color = {0xEE, 0x22, 0x77, 0xFF}
 		}
 
-		append(
-			rd,
-			Render_Data {
-				screen_pos,
-				color,
-				true,
-				Entity_Render_Data{entity_id, {0, 0}, g.assets.textures[texture]},
-			},
-		)
+		rd[entity_id] = Render_Data {
+			screen_pos,
+			color,
+			true,
+			Entity_Render_Data{entity_id, {0, 0}, g.assets.textures[texture]},
+		}
 	}
 }
 
-update_render_data :: proc(rd: ^[dynamic]Render_Data, world: ^core.World) {
-	for &data in rd {
+update_render_data :: proc(rd: ^map[uint]Render_Data, world: ^core.World) {
+	for _, &data in rd {
 		#partial switch val in data.type {
 		case Entity_Render_Data:
 			if val.entity_id in world.entities {
 				entity := &g.world.entities[val.entity_id]
-				data.screen_pos = [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
+				data.screen_pos = linalg.lerp(
+					data.screen_pos,
+					[2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)},
+					0.3,
+				)
 				data.is_visible = true
 			} else {
 				data.is_visible = false
