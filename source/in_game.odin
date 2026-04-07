@@ -2,6 +2,7 @@ package game
 
 import core "core"
 import "core:fmt"
+import "core:math/linalg"
 import rand "core:math/rand"
 import rl "vendor:raylib"
 
@@ -22,10 +23,14 @@ on_entity_moved :: proc(entity: ^core.Entity, dx, dy: i32) {}
 
 on_entity_attacked :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {
 	rd := &g.render_data[entity.id]
-	rd.screen_pos += {f32(dx), f32(dy)} * 16
+	rd.screen_pos += {f32(dx), f32(dy)} * 8
 }
 
-on_entity_took_damage :: proc(entity: ^core.Entity, amount: i32) {}
+on_entity_took_damage :: proc(entity: ^core.Entity, amount: i32) {
+	if entity.type == .PLAYER {
+		g.camera_zoom = 0.95
+	}
+}
 
 on_entity_gained_souls :: proc(entity: ^core.Entity, amount: i32) {}
 
@@ -40,7 +45,6 @@ in_game_enter :: proc() {
 	rand.reset(123456789, context.random_generator)
 	clear(&g.render_data)
 
-	g.map_texture = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT)
 	g.world.floor_changed = on_floor_change
 
 	core.world_init(&g.world, 20, 11)
@@ -90,9 +94,22 @@ in_game_update :: proc() {
 
 	core.tm_tick(&g.turn_manager, &g.world)
 	update_render_data(&g.render_data, &g.world)
+	g.camera_zoom = linalg.lerp(g.camera_zoom, 1, 0.3)
 }
 
 in_game_draw :: proc() {
+	rl.ClearBackground({15, 15, 15, 255})
+	rl.BeginMode2D(
+		rl.Camera2D {
+			offset = {f32((g.world.grid.width * 16) / 2), f32((g.world.grid.height * 16) / 2)},
+			target = {
+				f32((g.world.grid.width * 16) / 2),
+				f32((g.world.grid.height * 16) / 2) - 16,
+			},
+			rotation = 0,
+			zoom = g.camera_zoom,
+		},
+	)
 	rl.DrawTexturePro(
 		g.map_texture.texture,
 		{0, 0, f32(g.map_texture.texture.width), f32(-g.map_texture.texture.height)}, // Flip vertically
@@ -126,43 +143,28 @@ in_game_draw :: proc() {
 		case Damage_Pop_Render_Data:
 		}
 	}
+	rl.EndMode2D()
 
 	{ 	// draw ui
-		ui_area := rl.Rectangle{4, 194, 312, 42}
-		rl.DrawRectangle(0, 190, GAME_WIDTH, 50, rl.WHITE)
-		rl.DrawRectangle(2, 192, 316, 46, rl.BLACK)
-
-		rl.DrawText(
-			fmt.ctprintf("FLOOR: {}", g.world.current_floor),
-			i32(ui_area.x),
-			i32(ui_area.y),
-			10,
-			rl.WHITE,
-		)
+		rl.DrawText(fmt.ctprintf("FLOOR: {}", g.world.current_floor), 0, 0, 10, rl.WHITE)
+		rl.DrawText(fmt.ctprintf("Turn: {}", i32(g.turn_manager.turn_count)), 80, 0, 10, rl.WHITE)
 
 		rl.DrawText(
 			fmt.ctprintf("Souls: {}", g.world.entities[g.world.player_id].hp),
-			i32(ui_area.x),
-			i32(ui_area.y + 12),
+			160,
+			0,
 			10,
 			rl.WHITE,
 		)
 
 		rl.DrawText(
 			fmt.ctprintf("Difficulty: {}", i32(g.world.current_difficulty)),
-			i32(ui_area.x),
-			i32(ui_area.y + 23),
+			240,
+			0,
 			10,
 			rl.WHITE,
 		)
 
-		rl.DrawText(
-			fmt.ctprintf("Turn: {}", i32(g.turn_manager.turn_count)),
-			i32(ui_area.x),
-			i32(ui_area.y + 35),
-			10,
-			rl.WHITE,
-		)
 	}
 
 	if g.paused {show_pause_menu()}

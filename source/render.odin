@@ -36,9 +36,9 @@ add_damage_pop :: proc(rd: ^Render_Data) {
 }
 
 render_map :: proc(world: ^core.World) {
-	// populate visual data from tilemap
+	g.map_texture = rl.LoadRenderTexture(world.grid.width * 16, world.grid.height * 16)
 	rl.BeginTextureMode(g.map_texture)
-	rl.ClearBackground(rl.BLACK)
+	rl.ClearBackground(rl.BLANK)
 	for tile, idx in world.grid.cells {
 		texture_name: string = ""
 		color: rl.Color = rl.WHITE
@@ -138,7 +138,7 @@ update_render_data :: proc(rd: ^map[uint]Render_Data, world: ^core.World) {
 				data.screen_pos = linalg.lerp(
 					data.screen_pos,
 					[2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)},
-					0.3,
+					0.2,
 				)
 				data.is_visible = true
 			} else {

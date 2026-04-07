@@ -22,6 +22,7 @@ Game_Memory :: struct {
 	world:               core.World,
 	map_texture:         rl.RenderTexture,
 	render_data:         map[uint]Render_Data,
+	camera_zoom:         f32,
 }
 g: ^Game_Memory
 
@@ -117,6 +118,7 @@ game_init :: proc() {
 		world         = core.World{},
 		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
 		assets        = Assets{},
+		camera_zoom   = 1,
 	}
 	load_assets(&g.assets)
 
@@ -172,6 +174,8 @@ game_memory_size :: proc() -> int {
 @(export)
 game_hot_reloaded :: proc(mem: rawptr) {
 	g = (^Game_Memory)(mem)
+
+	on_floor_change(&g.world) // reset render data
 }
 
 @(export)
