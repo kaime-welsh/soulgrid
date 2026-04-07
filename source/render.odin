@@ -5,30 +5,13 @@ import "core:math/rand"
 import "engine"
 import rl "vendor:raylib"
 
-Tile_Render_Data :: struct {
-	texture: rl.Texture2D,
-}
-
-Entity_Render_Data :: struct {
-	entity_id: uint,
-	offset:    [2]f32,
-	texture:   rl.Texture2D,
-}
-
-Damage_Pop_Render_Data :: struct {
-	text: string,
-	life: f32,
-}
-
 Render_Data :: struct {
 	screen_pos: [2]f32,
 	color:      rl.Color,
 	is_visible: bool,
-	type:       union {
-		Tile_Render_Data,
-		Entity_Render_Data,
-		Damage_Pop_Render_Data,
-	},
+	entity_id:  uint,
+	offset:     [2]f32,
+	texture:    rl.Texture2D,
 }
 
 add_damage_pop :: proc(rd: ^Render_Data) {
@@ -124,25 +107,48 @@ populate_render_data :: proc(rd: ^map[uint]Render_Data, world: ^engine.World) {
 			screen_pos,
 			color,
 			true,
-			Entity_Render_Data{entity_id, {0, 0}, g.assets.textures[texture]},
+			entity_id,
+			{0, 0},
+			g.assets.textures[texture],
 		}
 	}
 }
 
 update_render_data :: proc(rd: ^map[uint]Render_Data, world: ^engine.World) {
 	for _, &data in rd {
-		#partial switch val in data.type {
-		case Entity_Render_Data:
-			if val.entity_id in world.entities {
-				entity := &g.world.entities[val.entity_id]
-				data.screen_pos = linalg.lerp(
-					data.screen_pos,
-					[2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)},
-					0.2,
+		if data.entity_id in world.entities {
+			entity := &g.world.entities[data.entity_id]
+			data.screen_pos = linalg.lerp(
+				data.screen_pos,
+				[2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)},
+				0.2,
+			)
+			data.is_visible = true
+		} else {
+			data.is_visible = false
+		}
+	}
+}
+
+
+render_entities :: proc() {
+	for _, data in g.render_data {
+		if !data.is_visible do continue
+		rl.DrawTextureEx(data.texture, data.screen_pos, 0.0, 1, data.color)
+		enemy := &g.world.entities[data.entity_id]
+		if enemy.next_command.type != nil {
+			if cmd, ok := enemy.next_command.type.(engine.Move_Command); ok {
+				center := [2]f32 {
+					f32(enemy.pos.x * 16) + (16 / 2),
+					f32(enemy.pos.y * 16) + (16 / 2),
+				}
+				offset := [2]f32{f32(cmd.dx * 6), f32(cmd.dy * 6)}
+
+				rl.DrawPixel(
+					i32(center.x + offset.x - 1),
+					i32(center.y + offset.y - 1),
+					{255, 255, 255, 255},
 				)
-				data.is_visible = true
-			} else {
-				data.is_visible = false
 			}
 		}
 	}

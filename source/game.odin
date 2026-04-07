@@ -24,6 +24,7 @@ Game_Memory :: struct {
 	map_texture:         rl.RenderTexture,
 	render_data:         map[uint]Render_Data,
 	floor_enemy_count:   f32,
+	floor_cleared:       bool,
 	camera_zoom:         f32,
 }
 g: ^Game_Memory
