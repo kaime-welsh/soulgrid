@@ -27,9 +27,6 @@ in_game_enter :: proc() {
 
 in_game_update :: proc() {
 	if rl.IsKeyPressed(.ESCAPE) {g.paused = !g.paused}
-	if rl.IsKeyDown(.LEFT_CONTROL) && rl.IsKeyPressed(.R) {
-		engine.world_next_floor(&g.world)
-		populate_render_data(&g.render_data, &g.world)}
 	if g.paused {return}
 
 	if g.floor_enemy_count > 0 {
@@ -50,6 +47,11 @@ in_game_update :: proc() {
 				input_received = true
 			} else if key_pressed(INPUT_KEY_RIGHT) {
 				player_command.type = engine.Move_Command{1, 0}
+				input_received = true
+			}
+
+			if rl.IsKeyPressed(.R) {
+				player_command.type = engine.Cast_Ability_Command({0})
 				input_received = true
 			}
 

@@ -7,6 +7,7 @@ Command_Result :: struct {
 Command_Type :: union {
 	Move_Command,
 	Bump_Command,
+	Cast_Ability_Command,
 }
 
 Command :: struct {
@@ -20,6 +21,10 @@ Move_Command :: struct {
 Bump_Command :: struct {
 	target: ^Entity,
 	dx, dy: i32,
+}
+
+Cast_Ability_Command :: struct {
+	ability_slot: int,
 }
 
 execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Command_Result {
@@ -69,6 +74,8 @@ execute_command :: proc(world: ^World, owner: ^Entity, command: ^Command) -> Com
 		if !cmd.target.is_alive {
 			entity_die(world, cmd.target)
 		}
+	case Cast_Ability_Command:
+		owner.ability_slots[cmd.ability_slot].exec(world, owner)
 	}
 
 	return Command_Result{true, {}}
