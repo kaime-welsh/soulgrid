@@ -1,4 +1,4 @@
-package core
+package engine
 
 Entity_Type :: enum {
 	PLAYER,

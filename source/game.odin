@@ -1,5 +1,5 @@
 package game
-import "core"
+import "engine"
 import rl "vendor:raylib"
 
 Scene :: enum {
@@ -18,8 +18,8 @@ Game_Memory :: struct {
 	should_change_scene: bool,
 	assets:              Assets,
 	render_target:       rl.RenderTexture2D,
-	turn_manager:        core.Turn_Manager,
-	world:               core.World,
+	turn_manager:        engine.Turn_Manager,
+	world:               engine.World,
 	map_texture:         rl.RenderTexture,
 	render_data:         map[uint]Render_Data,
 	camera_zoom:         f32,
@@ -115,7 +115,7 @@ game_init :: proc() {
 	g^ = Game_Memory {
 		run           = true,
 		current_scene = .MAIN_MENU,
-		world         = core.World{},
+		world         = engine.World{},
 		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
 		assets        = Assets{},
 		camera_zoom   = 1,

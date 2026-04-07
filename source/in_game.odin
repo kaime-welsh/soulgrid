@@ -1,12 +1,12 @@
 package game
 
-import core "core"
 import "core:fmt"
 import "core:math/linalg"
 import rand "core:math/rand"
+import engine "engine"
 import rl "vendor:raylib"
 
-on_floor_change :: proc(world: ^core.World) {
+on_floor_change :: proc(world: ^engine.World) {
 	render_map(&g.world)
 	populate_render_data(&g.render_data, &g.world)
 
@@ -19,22 +19,22 @@ on_floor_change :: proc(world: ^core.World) {
 	}
 }
 
-on_entity_moved :: proc(entity: ^core.Entity, dx, dy: i32) {}
+on_entity_moved :: proc(entity: ^engine.Entity, dx, dy: i32) {}
 
-on_entity_attacked :: proc(entity: ^core.Entity, target: ^core.Entity, dx, dy: i32) {
+on_entity_attacked :: proc(entity: ^engine.Entity, target: ^engine.Entity, dx, dy: i32) {
 	rd := &g.render_data[entity.id]
 	rd.screen_pos += {f32(dx), f32(dy)} * 8
 }
 
-on_entity_took_damage :: proc(entity: ^core.Entity, amount: i32) {
+on_entity_took_damage :: proc(entity: ^engine.Entity, amount: i32) {
 	if entity.type == .PLAYER {
 		g.camera_zoom = 0.95
 	}
 }
 
-on_entity_gained_souls :: proc(entity: ^core.Entity, amount: i32) {}
+on_entity_gained_souls :: proc(entity: ^engine.Entity, amount: i32) {}
 
-on_entity_died :: proc(entity: ^core.Entity, killed_by: ^core.Entity) {
+on_entity_died :: proc(entity: ^engine.Entity, killed_by: ^engine.Entity) {
 	if entity.type == .PLAYER {
 		change_scene(.MAIN_MENU)
 	}
@@ -47,8 +47,8 @@ in_game_enter :: proc() {
 
 	g.world.floor_changed = on_floor_change
 
-	core.world_init(&g.world, 20, 11)
-	core.tm_init(&g.turn_manager, 0.01, 10.0)
+	engine.world_init(&g.world, 20, 11)
+	engine.tm_init(&g.turn_manager, 0.01, 10.0)
 
 	for _, &entity in &g.world.entities {
 		entity.moved = on_entity_moved
@@ -62,37 +62,37 @@ in_game_enter :: proc() {
 in_game_update :: proc() {
 	if rl.IsKeyPressed(.ESCAPE) {g.paused = !g.paused}
 	if rl.IsKeyDown(.LEFT_CONTROL) && rl.IsKeyPressed(.R) {
-		core.world_next_floor(&g.world)
+		engine.world_next_floor(&g.world)
 		populate_render_data(&g.render_data, &g.world)}
 	if g.paused {return}
 
 	if g.turn_manager.turn_state == .WAITING_FOR_INPUT {
-		player_command: core.Command
+		player_command: engine.Command
 		input_received := false
 
 		// TODO: mouse controls
 
 		// keyboard controls
 		if key_pressed(INPUT_KEY_UP) {
-			player_command.type = core.Move_Command{0, -1}
+			player_command.type = engine.Move_Command{0, -1}
 			input_received = true
 		} else if key_pressed(INPUT_KEY_DOWN) {
-			player_command.type = core.Move_Command{0, 1}
+			player_command.type = engine.Move_Command{0, 1}
 			input_received = true
 		} else if key_pressed(INPUT_KEY_LEFT) {
-			player_command.type = core.Move_Command{-1, 0}
+			player_command.type = engine.Move_Command{-1, 0}
 			input_received = true
 		} else if key_pressed(INPUT_KEY_RIGHT) {
-			player_command.type = core.Move_Command{1, 0}
+			player_command.type = engine.Move_Command{1, 0}
 			input_received = true
 		}
 
 		if input_received {
-			core.tm_submit_input(&g.turn_manager, &g.world, player_command)
+			engine.tm_submit_input(&g.turn_manager, &g.world, player_command)
 		}
 	}
 
-	core.tm_tick(&g.turn_manager, &g.world)
+	engine.tm_tick(&g.turn_manager, &g.world)
 	update_render_data(&g.render_data, &g.world)
 	g.camera_zoom = linalg.lerp(g.camera_zoom, 1, 0.3)
 }
@@ -126,7 +126,7 @@ in_game_draw :: proc() {
 			rl.DrawTextureEx(val.texture, data.screen_pos, 0.0, 1, data.color)
 			enemy := &g.world.entities[val.entity_id]
 			if enemy.next_command.type != nil {
-				if cmd, ok := enemy.next_command.type.(core.Move_Command); ok {
+				if cmd, ok := enemy.next_command.type.(engine.Move_Command); ok {
 					center := [2]f32 {
 						f32(enemy.pos.x * 16) + (16 / 2),
 						f32(enemy.pos.y * 16) + (16 / 2),
@@ -172,7 +172,7 @@ in_game_draw :: proc() {
 
 in_game_exit :: proc() {
 	rl.UnloadRenderTexture(g.map_texture)
-	core.world_destroy(&g.world)
-	core.tm_destroy(&g.turn_manager)
+	engine.world_destroy(&g.world)
+	engine.tm_destroy(&g.turn_manager)
 }
 

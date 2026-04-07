@@ -1,8 +1,8 @@
 package game
 
-import core "core"
 import "core:math/linalg"
 import "core:math/rand"
+import "engine"
 import rl "vendor:raylib"
 
 Tile_Render_Data :: struct {
@@ -35,7 +35,7 @@ add_damage_pop :: proc(rd: ^Render_Data) {
 
 }
 
-render_map :: proc(world: ^core.World) {
+render_map :: proc(world: ^engine.World) {
 	g.map_texture = rl.LoadRenderTexture(world.grid.width * 16, world.grid.height * 16)
 	rl.BeginTextureMode(g.map_texture)
 	rl.ClearBackground(rl.BLANK)
@@ -95,7 +95,7 @@ render_map :: proc(world: ^core.World) {
 	rl.EndMode2D()
 }
 
-populate_render_data :: proc(rd: ^map[uint]Render_Data, world: ^core.World) {
+populate_render_data :: proc(rd: ^map[uint]Render_Data, world: ^engine.World) {
 	// populate entity data
 	for entity_id, entity in world.entities {
 		screen_pos := [2]f32{f32(entity.pos.x * 16), f32(entity.pos.y * 16)}
@@ -129,7 +129,7 @@ populate_render_data :: proc(rd: ^map[uint]Render_Data, world: ^core.World) {
 	}
 }
 
-update_render_data :: proc(rd: ^map[uint]Render_Data, world: ^core.World) {
+update_render_data :: proc(rd: ^map[uint]Render_Data, world: ^engine.World) {
 	for _, &data in rd {
 		#partial switch val in data.type {
 		case Entity_Render_Data:

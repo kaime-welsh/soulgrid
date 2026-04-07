@@ -1,4 +1,4 @@
-package core
+package engine
 
 Cell_Type :: enum {
 	EMPTY,
