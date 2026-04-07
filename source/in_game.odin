@@ -2,15 +2,17 @@ package game
 
 import "core:fmt"
 import "core:math/linalg"
-import rand "core:math/rand"
 import engine "engine"
 import rl "vendor:raylib"
 
 on_floor_change :: proc(world: ^engine.World) {
+	g.floor_enemy_count = 0
 	render_map(&g.world)
 	populate_render_data(&g.render_data, &g.world)
 
 	for _, &entity in &g.world.entities {
+		if entity.type != .PLAYER {g.floor_enemy_count += 1}
+
 		entity.moved = on_entity_moved
 		entity.attacked = on_entity_attacked
 		entity.took_damage = on_entity_took_damage
@@ -38,25 +40,28 @@ on_entity_died :: proc(entity: ^engine.Entity, killed_by: ^engine.Entity) {
 	if entity.type == .PLAYER {
 		change_scene(.MAIN_MENU)
 	}
+	if entity.type != .PLAYER {g.floor_enemy_count -= 1}
 }
 
 in_game_enter :: proc() {
 	g.paused = false
-	rand.reset(123456789, context.random_generator)
 	clear(&g.render_data)
 
 	g.world.floor_changed = on_floor_change
 
-	engine.world_init(&g.world, 20, 11)
+	engine.world_init(
+		&g.world,
+		20,
+		10,
+		engine.Drunk_Walker_Config {
+			floor_percent = 0.6,
+			turn_chance = 0.50,
+			room_chance = 0.01,
+			room_radius = 3,
+			lifespan = 80,
+		},
+	)
 	engine.tm_init(&g.turn_manager, 0.01, 10.0)
-
-	for _, &entity in &g.world.entities {
-		entity.moved = on_entity_moved
-		entity.attacked = on_entity_attacked
-		entity.took_damage = on_entity_took_damage
-		entity.gained_souls = on_entity_gained_souls
-		entity.died = on_entity_died
-	}
 }
 
 in_game_update :: proc() {
@@ -164,10 +169,23 @@ in_game_draw :: proc() {
 			10,
 			rl.WHITE,
 		)
+		rl.DrawText(fmt.ctprintf("{}", i32(g.floor_enemy_count)), 220, 0, 10, rl.WHITE)
+
 
 	}
 
-	if g.paused {show_pause_menu()}
+	if g.floor_enemy_count <= 0 {
+		rl.DrawRectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, {0, 0, 0, 100})
+		if ui_button_center({f32(GAME_WIDTH / 2), f32(GAME_HEIGHT / 2)}, "NEXT FLOOR", 20, 1.0) {
+			engine.world_next_floor(&g.world)
+		}
+	}
+
+
+	if g.paused {
+		rl.DrawRectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, {0, 0, 0, 100})
+		show_pause_menu()
+	}
 }
 
 in_game_exit :: proc() {

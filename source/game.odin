@@ -16,12 +16,14 @@ Game_Memory :: struct {
 	current_scene:       Scene,
 	next_scene:          Scene,
 	should_change_scene: bool,
+	seed:                u64,
 	assets:              Assets,
 	render_target:       rl.RenderTexture2D,
 	turn_manager:        engine.Turn_Manager,
 	world:               engine.World,
 	map_texture:         rl.RenderTexture,
 	render_data:         map[uint]Render_Data,
+	floor_enemy_count:   f32,
 	camera_zoom:         f32,
 }
 g: ^Game_Memory
@@ -113,12 +115,14 @@ game_init :: proc() {
 	g = new(Game_Memory)
 
 	g^ = Game_Memory {
-		run           = true,
-		current_scene = .MAIN_MENU,
-		world         = engine.World{},
-		render_target = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
-		assets        = Assets{},
-		camera_zoom   = 1,
+		run               = true,
+		current_scene     = .MAIN_MENU,
+		world             = engine.World{},
+		render_target     = rl.LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT),
+		assets            = Assets{},
+		camera_zoom       = 1,
+		seed              = 12345,
+		floor_enemy_count = 0,
 	}
 	load_assets(&g.assets)
 

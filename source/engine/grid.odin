@@ -15,7 +15,6 @@ Grid :: struct {
 }
 
 Drunk_Walker_Config :: struct {
-	directions:    [][2]i32,
 	floor_percent: f32,
 	turn_chance:   f32,
 	room_chance:   f32,
@@ -59,20 +58,20 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 	for i in 0 ..< len(tm.cells) {
 		tm.cells[i] = .EMPTY
 	}
-
+	directions := [][2]i32{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 	clear(&tm.open_tiles)
 
 	{ 	// drunk walk
 		target_floor_count := int(f32(tm.width - 2) * f32(tm.height - 2) * config.floor_percent)
 		walker_pos := [2]i32{tm.width / 2, tm.height / 2}
-		walker_dir := rand.choice(config.directions)
+		walker_dir := rand.choice(directions)
 		walker_lifespan := 0
 
 		for len(tm.open_tiles) < target_floor_count {
 			// walker has surpassed lifespan, but need more tiles, create new walker in an existing open tile
 			if walker_lifespan >= config.lifespan && len(tm.open_tiles) > 0 {
 				walker_pos = rand.choice(tm.open_tiles[:])
-				walker_dir = rand.choice(config.directions)
+				walker_dir = rand.choice(directions)
 				walker_lifespan = 0
 			}
 
@@ -100,7 +99,7 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 			}
 
 			if rand.float32() < config.turn_chance { 	// turn random direction
-				walker_dir = rand.choice(config.directions)
+				walker_dir = rand.choice(directions)
 			}
 
 			next_pos := walker_pos + walker_dir
@@ -110,7 +109,7 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 			   next_pos.y < tm.height - 1 {
 				walker_pos += walker_dir
 			} else {
-				walker_dir = rand.choice(config.directions)}
+				walker_dir = rand.choice(directions)}
 
 			walker_lifespan += 1
 		}
@@ -137,7 +136,7 @@ grid_generate :: proc(tm: ^Grid, config: Drunk_Walker_Config) {
 		defer delete(potential_exits)
 
 		for pos in tm.open_tiles {
-			for dir in config.directions {
+			for dir in directions {
 				check_pos := pos + dir
 				if grid_get_at(tm, check_pos.x, check_pos.y) == .WALL {
 					array_contains := false

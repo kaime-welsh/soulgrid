@@ -10,13 +10,15 @@ World :: struct {
 	just_changed_floor: bool,
 	floor_changed:      proc(world: ^World),
 	current_difficulty: f32,
+	config:             Drunk_Walker_Config,
 }
 
-world_init :: proc(world: ^World, width, height: i32) {
+world_init :: proc(world: ^World, width, height: i32, config: Drunk_Walker_Config) {
 	world.entity_count = 1
 	world.entities = make(map[uint]Entity)
 	world_reset(world, width, height)
 	world.player_id = world_add_entity(world, .PLAYER, 0, 0)
+	world.config = config
 	world_next_floor(world)
 }
 
@@ -35,6 +37,7 @@ world_add_entity :: proc(world: ^World, type: Entity_Type, x, y: i32) -> uint {
 	ptr.id = entity_id
 	return entity_id
 }
+
 world_reset :: proc(world: ^World, width, height: i32) {
 	world.current_floor = 0
 	world.grid = grid_init(width, height)
@@ -50,17 +53,7 @@ world_get_entity_at :: proc(world: ^World, x, y: i32) -> uint {
 world_next_floor :: proc(world: ^World) {
 	world.current_floor += 1
 
-	grid_generate(
-		&world.grid,
-		Drunk_Walker_Config {
-			directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}},
-			floor_percent = 0.4,
-			turn_chance = 0.20,
-			room_chance = 0.01,
-			room_radius = 2,
-			lifespan = 100,
-		},
-	)
+	grid_generate(&world.grid, world.config)
 
 	// Keep player, remove everyone else
 	for id in world.entities {

@@ -49,6 +49,9 @@ entity_die :: proc(world: ^World, entity: ^Entity) {
 		if player_ptr.gained_souls != nil {
 			player_ptr.gained_souls(player_ptr, 1)
 		}
+		if entity.died != nil {
+			entity.died(entity, player_ptr)
+		}
 		delete_key(&world.entities, entity.id)
 	} else {
 		if entity.died != nil {
