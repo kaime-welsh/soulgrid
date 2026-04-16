@@ -10,6 +10,7 @@ extends Node2D
 @export var gameSeed := "12345"
 
 var entities_at: Dictionary[Vector2i, Entity]
+var open_cells: Array[Vector2i]
 
 
 func generate_floor() -> void:
@@ -18,7 +19,25 @@ func generate_floor() -> void:
 		float(map_size.x / 2) * Config.CELL_SIZE + 8,
 		float(map_size.y / 2) * Config.CELL_SIZE + 8
 	)
-	var open_cells: Array[Vector2i]
+	
+	open_cells.clear()
+	while open_cells.size() <= 1:
+		_generate_tiles()
+		
+	open_cells.shuffle()
+	player.teleport(open_cells.pop_back())
+	entities_at[player.grid_position] = player
+				
+func _ready() -> void:
+	map_size = clamp(map_size, Vector2i(5, 5), Vector2i(29, 15))
+	generate_floor()
+	seed(int(gameSeed))
+	
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("regen_map"):
+		generate_floor()
+		
+func _generate_tiles() -> void:
 	solids_tilemap.clear()
 	for y in range(map_size.y):
 		for x in range(map_size.x):
@@ -34,16 +53,3 @@ func generate_floor() -> void:
 				continue
 
 			open_cells.push_back(cell_pos)
-	
-	open_cells.shuffle()
-	player.teleport(open_cells.pop_back())
-	entities_at[player.grid_position] = player
-				
-func _ready() -> void:
-	map_size = clamp(map_size, Vector2i(5, 5), Vector2i(29, 15))
-	generate_floor()
-	seed(int(gameSeed))
-	
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("regen_map"):
-		generate_floor()

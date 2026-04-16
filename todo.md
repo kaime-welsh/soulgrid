@@ -1,0 +1,7 @@
+- enemies
+- proper drunk walk algo
+    - only place walls along outer edge
+- fx
+- abilities
+- floor accumulation
+- turn count
