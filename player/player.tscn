@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://dxlv5qbt4pgf8"]
+
+[ext_resource type="Texture2D" uid="uid://dean5eo5e4" path="res://assets/monsters/demon.png" id="1_oul6g"]
+[ext_resource type="Script" uid="uid://cbbqcnp3r7i8q" path="res://player/player_controller.gd" id="2_rkbax"]
+
+[node name="Player" type="Node2D" unique_id=2087772429]
+script = ExtResource("2_rkbax")
+metadata/_custom_type_script = "uid://14htvuontdne"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=523786857]
+texture = ExtResource("1_oul6g")
+centered = false
